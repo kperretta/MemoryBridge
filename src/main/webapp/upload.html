@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Bridge - Aggiungi contenuti</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="navbar-slot"></div>
+
+<main class="container-narrow">
+    <h1>Aggiungi un contenuto</h1>
+    <p class="text-muted mb-2">Carica una foto o un racconto e collegalo alla persona di famiglia a cui si riferisce.</p>
+
+    <div class="card">
+        <form id="upload-form">
+            <div class="form-group">
+                <label for="type">Tipo di contenuto</label>
+                <select id="type" required>
+                    <option value="text">Racconto scritto</option>
+                    <option value="photo">Foto</option>
+                    <option value="audio">Audio</option>
+                    <option value="video">Video</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="title">Titolo</label>
+                <input type="text" id="title" required placeholder="es. Il matrimonio dei nonni">
+            </div>
+
+            <div class="form-group" id="file-group">
+                <label for="file">File (foto/audio/video)</label>
+                <input type="file" id="file" accept="image/*,audio/*,video/*">
+                <div id="file-preview" class="mt-1"></div>
+                <small class="text-muted">Nota: nel prototipo il file non viene caricato realmente sul server, salviamo solo il nome.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Didascalia</label>
+                <textarea id="description" placeholder="Racconta il contesto di questo contenuto…"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="content">Testo del ricordo (se racconto)</label>
+                <textarea id="content" placeholder="Se hai scelto 'racconto scritto', inserisci qui il testo…"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="person">Associa a un membro della famiglia</label>
+                <select id="person" required></select>
+            </div>
+
+            <div class="form-group">
+                <label for="eventDate">Data dell'evento (opzionale)</label>
+                <input type="date" id="eventDate">
+            </div>
+
+            <div id="error" class="error-message hidden"></div>
+
+            <div class="flex-row" style="justify-content:flex-end">
+                <a href="home.html" class="btn btn-outline">Annulla</a>
+                <button type="submit" class="btn btn-primary">Salva</button>
+            </div>
+        </form>
+    </div>
+</main>
+
+<script src="js/api.js"></script>
+<script src="js/navbar.js"></script>
+<script src="js/upload.js"></script>
+</body>
+</html>

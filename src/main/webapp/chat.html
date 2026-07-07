@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Bridge - Racconta un ricordo</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="navbar-slot"></div>
+
+<div class="chat-container">
+    <div class="chat-header">
+        <div class="iris-avatar">🦉</div>
+        <div>
+            <h2 style="margin:0">Iris</h2>
+            <p class="text-muted" style="font-size:13px;margin:0">La tua compagna di racconto</p>
+        </div>
+    </div>
+
+    <div class="chat-messages" id="messages"></div>
+
+    <div class="chat-input">
+        <input type="text" id="user-input" placeholder="Scrivi il tuo ricordo…" autocomplete="off">
+        <!-- Miglioramento #2 Assignment 3: etichetta testuale accanto al microfono -->
+        <button class="mic-btn" id="mic-btn" type="button" aria-label="Registra audio">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" y1="19" x2="12" y2="23"/>
+                <line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+            Registra audio
+        </button>
+        <button class="btn btn-primary" id="send-btn">Invia</button>
+        <button class="btn btn-outline" id="end-btn">Fine</button>
+    </div>
+</div>
+
+<!-- Modal anteprima -->
+<div class="modal-backdrop hidden" id="preview-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Il tuo racconto</h2>
+            <button class="modal-close" onclick="closePreview()">×</button>
+        </div>
+        <p class="text-muted mb-2">Ecco un riassunto del ricordo che abbiamo raccolto insieme:</p>
+
+        <div class="form-group">
+            <label for="preview-title">Titolo</label>
+            <input type="text" id="preview-title" placeholder="Dai un titolo al tuo ricordo">
+        </div>
+        <div class="form-group">
+            <label>Racconto</label>
+            <div id="preview-content" class="card" style="max-height:200px;overflow-y:auto;white-space:pre-wrap"></div>
+        </div>
+        <div class="form-group">
+            <label for="preview-person">Chi è protagonista di questo ricordo?</label>
+            <select id="preview-person"></select>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closePreview()">Annulla</button>
+            <button class="btn btn-primary" id="save-btn">Salva il ricordo</button>
+        </div>
+    </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/navbar.js"></script>
+<script src="js/chat.js"></script>
+</body>
+</html>

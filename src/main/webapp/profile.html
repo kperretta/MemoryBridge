@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Bridge - Profilo</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="navbar-slot"></div>
+
+<main class="container">
+    <a href="tree.html" class="text-muted" style="font-size:14px">← Torna all'albero</a>
+
+    <div class="card mt-2" id="profile-card">
+        <p class="text-muted">Caricamento…</p>
+    </div>
+
+    <h2 class="mt-3">Timeline dei ricordi</h2>
+    <div class="timeline" id="timeline">
+        <p class="text-muted">Caricamento…</p>
+    </div>
+</main>
+
+<!-- Modal ricordo espanso -->
+<div class="modal-backdrop hidden" id="memory-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 id="memory-title">…</h2>
+            <button class="modal-close" onclick="closeMemoryModal()">×</button>
+        </div>
+        <div id="memory-body"></div>
+    </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/navbar.js"></script>
+<script src="js/profile.js"></script>
+</body>
+</html>

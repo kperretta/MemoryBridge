@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Bridge - Albero genealogico</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .tree-generations {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            padding: 24px;
+            align-items: center;
+        }
+        .generation {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .connector {
+            width: 3px;
+            height: 30px;
+            background: var(--primary-light);
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+<div id="navbar-slot"></div>
+
+<main class="container">
+    <div class="flex-row" style="justify-content:space-between;margin-bottom:16px">
+        <h1 style="margin:0">Albero genealogico</h1>
+        <button class="btn btn-primary" onclick="openAddModal()">+ Aggiungi familiare</button>
+    </div>
+    <p class="text-muted mb-2">Clicca su un membro per vedere il suo profilo o modificarne i dati.</p>
+
+    <div class="tree-container">
+        <div id="tree" class="tree-generations">
+            <p class="text-muted text-center">Caricamento…</p>
+        </div>
+    </div>
+</main>
+
+<!-- Modal aggiungi/modifica familiare -->
+<div class="modal-backdrop hidden" id="member-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 id="modal-title">Aggiungi familiare</h2>
+            <button class="modal-close" onclick="closeMemberModal()">×</button>
+        </div>
+        <form id="member-form">
+            <input type="hidden" id="member-id">
+
+            <div class="form-group">
+                <label for="m-firstName">Nome</label>
+                <input type="text" id="m-firstName" required>
+            </div>
+            <div class="form-group">
+                <label for="m-lastName">Cognome</label>
+                <input type="text" id="m-lastName" required>
+            </div>
+            <div class="form-group">
+                <label for="m-gender">Genere</label>
+                <select id="m-gender">
+                    <option value="F">Femmina</option>
+                    <option value="M">Maschio</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="m-birthDate">Data di nascita</label>
+                <input type="date" id="m-birthDate">
+            </div>
+            <div class="form-group">
+                <label for="m-deathDate">Data di morte <span class="text-muted">(vuota se vivente)</span></label>
+                <input type="date" id="m-deathDate">
+            </div>
+            <div class="form-group">
+                <label for="m-birthPlace">Luogo di nascita</label>
+                <input type="text" id="m-birthPlace">
+            </div>
+            <div class="form-group">
+                <label for="m-father">Padre</label>
+                <select id="m-father"><option value="">— Nessuno —</option></select>
+            </div>
+            <div class="form-group">
+                <label for="m-mother">Madre</label>
+                <select id="m-mother"><option value="">— Nessuna —</option></select>
+            </div>
+            <div class="form-group">
+                <label for="m-description">Descrizione</label>
+                <textarea id="m-description" placeholder="Racconta brevemente chi era questa persona…"></textarea>
+            </div>
+
+            <div id="member-error" class="error-message hidden"></div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeMemberModal()">Annulla</button>
+                <button type="submit" class="btn btn-primary">Salva</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Menu contestuale nodo -->
+<div class="modal-backdrop hidden" id="node-menu">
+    <div class="modal" style="max-width:340px">
+        <div class="modal-header">
+            <h2 id="node-menu-name">…</h2>
+            <button class="modal-close" onclick="closeNodeMenu()">×</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+            <button class="btn btn-primary" id="view-profile-btn">Apri profilo e timeline</button>
+            <button class="btn btn-secondary" id="edit-btn">Modifica</button>
+            <button class="btn btn-secondary" id="add-child-btn">Aggiungi figlio/a</button>
+            <button class="btn btn-secondary" id="invite-btn">Invita a Memory Bridge</button>
+        </div>
+    </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/navbar.js"></script>
+<script src="js/tree.js"></script>
+</body>
+</html>

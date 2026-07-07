@@ -1,0 +1,46 @@
+package com.memorybridge.servlet;
+
+import com.memorybridge.data.DataStore;
+import com.memorybridge.model.User;
+import com.memorybridge.util.JsonUtil;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+
+import java.io.IOException;
+
+@WebServlet("/api/me")
+public class MeServlet extends HttpServlet {
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+
+        HttpSession session = req.getSession(false);
+        if (session == null || session.getAttribute("userId") == null) {
+            resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            resp.getWriter().write("{\"error\":\"Non autenticato\"}");
+            return;
+        }
+
+        Long userId = (Long) session.getAttribute("userId");
+        User u = DataStore.get().findUser(userId);
+        if (u == null) {
+            session.invalidate();
+            resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            resp.getWriter().write("{\"error\":\"Utente non trovato\"}");
+            return;
+        }
+
+        u.setPassword(null);
+        resp.getWriter().write(JsonUtil.GSON.toJson(u));
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        // logout: distrugge la sessione
+        HttpSession session = req.getSession(false);
+        if (session != null) session.invalidate();
+        resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+    }
+}

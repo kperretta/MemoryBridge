@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Bridge - Accedi</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="auth-page">
+    <div class="auth-card">
+        <h1>Memory Bridge</h1>
+        <p class="subtitle">Accedi per continuare a raccontare la tua storia</p>
+
+        <form id="login-form">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" required autocomplete="email" placeholder="tu@email.it">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" required autocomplete="current-password">
+            </div>
+            <div id="error" class="error-message hidden"></div>
+            <button type="submit" class="btn btn-primary btn-block">Accedi</button>
+        </form>
+
+        <div class="auth-footer">
+            Non hai un account? <a href="register.html">Registrati</a>
+        </div>
+        <div class="auth-footer mt-2" style="font-size:12px">
+            Demo: <strong>maria@test.it</strong> / <strong>marco@test.it</strong> / <strong>sofia@test.it</strong><br>
+            Password: <strong>password</strong>
+        </div>
+    </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+    // Se già loggato, vai in home
+    api.get('/api/me').then(() => window.location.href = 'home.html').catch(() => {});
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const errEl = document.getElementById('error');
+        errEl.classList.add('hidden');
+
+        try {
+            await api.post('/api/login', { email, password });
+            window.location.href = 'home.html';
+        } catch (err) {
+            errEl.textContent = err.message || 'Errore di login';
+            errEl.classList.remove('hidden');
+        }
+    });
+</script>
+</body>
+</html>

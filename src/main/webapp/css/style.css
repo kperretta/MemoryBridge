@@ -652,3 +652,18 @@ h3 { font-size: 18px; margin-bottom: 8px; }
     from { transform: translate(-50%, 20px); opacity: 0; }
     to { transform: translate(-50%, 0); opacity: 1; }
 }
+
+/* Indicatore di registrazione in corso (pallino rosso pulsante) */
+.recording-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background: white;
+    border-radius: 50%;
+    margin-right: 6px;
+    animation: pulseDot 1s infinite;
+}
+@keyframes pulseDot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.85); }
+}

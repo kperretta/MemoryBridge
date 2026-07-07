@@ -14,6 +14,7 @@ public class User {
     private String familyCode;      // codice del nucleo familiare
     private String avatarUrl;
     private Long familyMemberId;    // eventuale collegamento al nodo dell'albero
+    private Long mediaId;           // foto profilo utente
 
     public User() {}
 
@@ -49,6 +50,9 @@ public class User {
 
     public Long getFamilyMemberId() { return familyMemberId; }
     public void setFamilyMemberId(Long familyMemberId) { this.familyMemberId = familyMemberId; }
+
+    public Long getMediaId() { return mediaId; }
+    public void setMediaId(Long mediaId) { this.mediaId = mediaId; }
 
     public String getFullName() { return firstName + " " + lastName; }
 }

@@ -1,4 +1,4 @@
-package controller.memorybridge;
+package controller;
 
 import java.io.*;
 

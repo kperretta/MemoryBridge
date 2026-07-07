@@ -2,7 +2,7 @@
 
 Piattaforma per preservare e valorizzare la memoria familiare.
 Corso di Interazione Uomo-Macchina — A.A. 2025/2026
-**Katia Perretta**, **Stefano Santoro**
+**Katia Perretta** 
 
 ## Stack
 

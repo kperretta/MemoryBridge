@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Bridge - Registrati</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="auth-page">
+    <div class="auth-card">
+        <h1>Memory Bridge</h1>
+        <p class="subtitle">Crea il tuo account e unisciti alla famiglia</p>
+
+        <form id="register-form">
+            <div class="form-group">
+                <label for="firstName">Nome</label>
+                <input type="text" id="firstName" required>
+            </div>
+            <div class="form-group">
+                <label for="lastName">Cognome</label>
+                <input type="text" id="lastName" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" required minlength="4">
+            </div>
+            <div class="form-group">
+                <label for="inviteCode">Codice invito <span style="color:var(--text-muted);font-weight:400">(se ricevuto)</span></label>
+                <input type="text" id="inviteCode" placeholder="es. A1B2C3D4">
+            </div>
+            <div class="form-group">
+                <label for="familyCode">oppure Codice famiglia esistente</label>
+                <input type="text" id="familyCode" placeholder="es. ROSSI2025">
+            </div>
+            <div id="error" class="error-message hidden"></div>
+            <button type="submit" class="btn btn-primary btn-block">Registrati</button>
+        </form>
+
+        <div class="auth-footer">
+            Hai già un account? <a href="index.html">Accedi</a>
+        </div>
+    </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+    // Pre-compila il codice invito se presente nell'URL: register.html?invite=XXXX
+    const urlInvite = new URLSearchParams(window.location.search).get('invite');
+    if (urlInvite) document.getElementById('inviteCode').value = urlInvite;
+
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const body = {
+            firstName: document.getElementById('firstName').value.trim(),
+            lastName: document.getElementById('lastName').value.trim(),
+            email: document.getElementById('email').value.trim(),
+            password: document.getElementById('password').value,
+            inviteCode: document.getElementById('inviteCode').value.trim(),
+            familyCode: document.getElementById('familyCode').value.trim()
+        };
+        const errEl = document.getElementById('error');
+        errEl.classList.add('hidden');
+
+        try {
+            await api.post('/api/register', body);
+            window.location.href = 'home.html';
+        } catch (err) {
+            errEl.textContent = err.message;
+            errEl.classList.remove('hidden');
+        }
+    });
+</script>
+</body>
+</html>

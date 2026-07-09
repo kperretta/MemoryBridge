@@ -12,12 +12,19 @@
     });
 })();
 
-// Preview del file selezionato
+// Preview del file selezionato + auto-detect del tipo
 document.getElementById('file').addEventListener('change', (e) => {
     const file = e.target.files[0];
     const preview = document.getElementById('file-preview');
     preview.innerHTML = '';
     if (!file) return;
+
+    // AUTO-DETECT: imposta il campo "type" in base al MIME del file caricato,
+    // cosi' non e' l'utente a doverlo scegliere manualmente.
+    const typeSelect = document.getElementById('type');
+    if (file.type.startsWith('image/')) typeSelect.value = 'photo';
+    else if (file.type.startsWith('audio/')) typeSelect.value = 'audio';
+    else if (file.type.startsWith('video/')) typeSelect.value = 'video';
 
     if (file.type.startsWith('image/')) {
         const reader = new FileReader();

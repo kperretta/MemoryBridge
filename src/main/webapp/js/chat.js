@@ -1,15 +1,15 @@
-/* T1 - Chat con Iris per registrare un ricordo.
-   Supporta scrittura testuale e registrazione audio reale (MediaRecorder API). */
+/* T1 - Chat con Iris strutturata per temi + registrazione audio reale */
 
-const conversation = [];   // {role, text, mediaId}
+const conversation = [];
 let currentStep = 0;
+let currentTheme = null;
 let familyMembers = [];
 
 // Stato registrazione audio
 let mediaRecorder = null;
 let recordedChunks = [];
 let recordingMimeType = 'audio/webm';
-let recordedAudioIds = [];        // tutti gli audio della conversazione
+let recordedAudioIds = [];
 
 const messagesEl = document.getElementById('messages');
 const userInput = document.getElementById('user-input');
@@ -57,6 +57,31 @@ function appendMessage(role, text, mediaId, mediaType) {
     conversation.push({ role, text: text || '', mediaId });
 }
 
+/* Mostra i pulsanti temi come "quick reply" */
+function appendThemeButtons(themes) {
+    const wrap = document.createElement('div');
+    wrap.className = 'theme-buttons';
+    themes.forEach(t => {
+        const b = document.createElement('button');
+        b.className = 'btn btn-secondary theme-btn';
+        b.textContent = t.label;
+        b.onclick = () => selectTheme(t.id, t.label, wrap);
+        wrap.appendChild(b);
+    });
+    messagesEl.appendChild(wrap);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+async function selectTheme(themeId, label, wrapEl) {
+    currentTheme = themeId;
+    // Simulo che l'utente abbia "risposto" con la scelta del tema
+    appendMessage('user', label);
+    // Disabilito i bottoni tema
+    if (wrapEl) wrapEl.remove();
+    // Chiedo la prima domanda del tema
+    await irisNextTurn();
+}
+
 function showTyping() {
     const div = document.createElement('div');
     div.className = 'msg msg-iris typing';
@@ -65,19 +90,24 @@ function showTyping() {
     messagesEl.appendChild(div);
     messagesEl.scrollTop = messagesEl.scrollHeight;
 }
-function hideTyping() {
-    document.getElementById('typing-indicator')?.remove();
-}
+function hideTyping() { document.getElementById('typing-indicator')?.remove(); }
 
 async function irisNextTurn() {
     showTyping();
     try {
-        const r = await api.get(`/api/iris?step=${currentStep}`);
+        const url = currentTheme
+            ? `/api/iris?step=${currentStep}&theme=${currentTheme}`
+            : `/api/iris?step=${currentStep}`;
+        const r = await api.get(url);
         setTimeout(() => {
             hideTyping();
             r.messages.forEach((msg, i) => {
                 setTimeout(() => appendMessage('iris', msg), i * 700);
             });
+            // Se sono arrivati anche i temi, li mostro come pulsanti (delay per apparire dopo i messaggi)
+            if (r.themes && r.themes.length > 0) {
+                setTimeout(() => appendThemeButtons(r.themes), r.messages.length * 700 + 200);
+            }
             currentStep = r.nextStep;
         }, 800);
     } catch (e) {
@@ -99,20 +129,17 @@ function sendUserMessage() {
     setTimeout(irisNextTurn, 500);
 }
 
-/* ============== AUDIO REALE ============== */
+/* ============== AUDIO ============== */
 micBtn.addEventListener('click', toggleRecording);
 
 async function toggleRecording() {
-    if (mediaRecorder && mediaRecorder.state === 'recording') {
-        stopRecording();
-    } else {
-        await startRecording();
-    }
+    if (mediaRecorder && mediaRecorder.state === 'recording') stopRecording();
+    else await startRecording();
 }
 
 async function startRecording() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        alert('Il tuo browser non supporta la registrazione audio. Usa Chrome, Firefox o Safari aggiornati.');
+        alert('Il tuo browser non supporta la registrazione audio.');
         return;
     }
     try {
@@ -131,7 +158,7 @@ async function startRecording() {
         updateMicButton(true);
     } catch (err) {
         console.error(err);
-        alert('Permesso microfono negato o non disponibile. Verifica le impostazioni del browser.');
+        alert('Permesso microfono negato o non disponibile.');
     }
 }
 
@@ -152,8 +179,7 @@ function updateMicButton(recording) {
                 <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
                 <line x1="12" y1="19" x2="12" y2="23"/>
                 <line x1="8" y1="23" x2="16" y2="23"/>
-            </svg>
-            Registra audio`;
+            </svg> Registra audio`;
         micBtn.style.background = '';
         micBtn.style.color = '';
     }
@@ -163,18 +189,12 @@ async function handleRecordedAudio() {
     if (recordedChunks.length === 0) return;
     const blob = new Blob(recordedChunks, { type: recordingMimeType });
     recordedChunks = [];
-
     const formData = new FormData();
     const ext = recordingMimeType.includes('mp4') ? 'm4a'
               : recordingMimeType.includes('ogg') ? 'ogg' : 'webm';
     formData.append('file', blob, `recording.${ext}`);
-
     try {
-        const r = await fetch('api/media', {
-            method: 'POST',
-            credentials: 'include',
-            body: formData
-        });
+        const r = await fetch('api/media', { method: 'POST', credentials: 'include', body: formData });
         if (!r.ok) throw new Error('Upload fallito');
         const { id } = await r.json();
         recordedAudioIds.push(id);
@@ -185,7 +205,7 @@ async function handleRecordedAudio() {
     }
 }
 
-/* ============== FINE / ANTEPRIMA / SALVA ============== */
+/* ============== FINE ============== */
 document.getElementById('end-btn').addEventListener('click', () => {
     const userMessages = conversation
         .filter(m => m.role === 'user')
@@ -231,10 +251,10 @@ document.getElementById('save-btn').addEventListener('click', async () => {
         await api.post('/api/memories', {
             title, content, type, mediaId,
             taggedPersonId: parseInt(personId),
-            description: 'Racconto registrato con Iris'
+            description: currentTheme ? `Racconto con Iris (tema: ${currentTheme})` : 'Racconto con Iris'
         });
         closePreview();
-        toast('Il tuo ricordo è stato salvato! Ora fa parte della storia della tua famiglia');
+        toast('Il tuo ricordo è stato salvato!');
         setTimeout(() => window.location.href = 'home.html', 2000);
     } catch (e) {
         alert('Errore: ' + e.message);

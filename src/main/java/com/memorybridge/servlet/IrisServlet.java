@@ -5,32 +5,76 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
- * "Finta IA" per la chat con Iris (T1). Il frontend chiama:
- *   GET /api/iris?step=N   → restituisce la domanda N-esima
+ * Iris strutturata per temi. Il flusso e':
  *
- * In un sistema reale useremmo LLM, qui abbiamo un elenco di domande
- * mirate a stimolare il racconto di ricordi familiari.
+ *   step=0 (nessun tema)     -> messaggio di benvenuto + lista temi selezionabili
+ *   step=1, theme=X          -> prima domanda del tema X
+ *   step=2, theme=X          -> seconda domanda del tema X
+ *   ...
+ *   step=N (fine tema)       -> messaggio di chiusura
+ *
+ * Il frontend mostra i temi come pulsanti quick-reply.
+ * NB: non e' un vero LLM. Le domande sono pre-scritte per tema; in una
+ * versione produttiva si integrerebbe un modello linguistico che genera
+ * domande contestuali basate sulla risposta dell'utente.
  */
 @WebServlet("/api/iris")
 public class IrisServlet extends HttpServlet {
 
-    private static final List<String> WELCOME = List.of(
-            "Ciao, sono Iris! Sono qui per aiutarti a raccogliere un ricordo speciale.",
-            "Quando sei pronto, dimmi pure di chi o di cosa vorresti parlare oggi."
-    );
+    // Temi disponibili con label leggibile
+    private static final Map<String, String> THEMES = new LinkedHashMap<>();
+    static {
+        THEMES.put("person",    "Una persona di famiglia");
+        THEMES.put("event",     "Un momento speciale");
+        THEMES.put("place",     "Un luogo importante");
+        THEMES.put("tradition", "Una tradizione o ricetta");
+        THEMES.put("object",    "Un oggetto con una storia");
+    }
 
-    private static final List<String> QUESTIONS = List.of(
-            "Che bel racconto. Ti ricordi in che periodo è successo?",
-            "C'è un dettaglio particolare che ti è rimasto impresso? Un profumo, un colore, una frase?",
-            "Chi era presente in quel momento?",
-            "Come ti sei sentito? Che emozione hai provato?",
-            "Cosa vorresti che i tuoi familiari sapessero di questa storia?",
-            "C'è qualcos'altro che vorresti aggiungere prima di chiudere?"
-    );
+    // Domande specifiche per ciascun tema
+    private static final Map<String, List<String>> QUESTIONS = new HashMap<>();
+    static {
+        QUESTIONS.put("person", List.of(
+                "Iniziamo dalle basi: come si chiamava questa persona e che rapporto avevi con lei?",
+                "C'era un modo di dire, un gesto o un'abitudine che la rendeva unica?",
+                "Che aspetto aveva? Ricordi qualche dettaglio del suo modo di essere?",
+                "Qual e' il ricordo piu' vivido che hai di lei, quello che ti torna in mente per primo?"
+        ));
+
+        QUESTIONS.put("event", List.of(
+                "Ti ricordi in che periodo e' successo? Anche solo l'anno o la stagione va bene.",
+                "Chi c'era con te in quel momento?",
+                "Cosa hai provato? Che emozione ti e' rimasta addosso?",
+                "C'e' un dettaglio particolare che ti e' rimasto impresso? Un suono, un profumo, una frase?"
+        ));
+
+        QUESTIONS.put("place", List.of(
+                "Che luogo era e dove si trovava?",
+                "Come ci si arrivava? Ricordi il viaggio, il percorso?",
+                "Quali profumi, suoni o colori lo caratterizzavano?",
+                "Con chi lo hai frequentato di piu' e perche' era importante per te?"
+        ));
+
+        QUESTIONS.put("tradition", List.of(
+                "Come si chiamava questa tradizione, o ricetta? E chi te l'ha tramandata?",
+                "In quali occasioni la celebravate o la preparavate?",
+                "C'e' un ingrediente, un gesto o un dettaglio segreto che vuoi tramandare?",
+                "Perche' questa tradizione conta per te? Che significato ha per la famiglia?"
+        ));
+
+        QUESTIONS.put("object", List.of(
+                "Che oggetto e', e a chi apparteneva originariamente?",
+                "Come e' arrivato nelle tue mani?",
+                "Che valore ha per te oggi?",
+                "C'e' una storia o un momento preciso legato a questo oggetto?"
+        ));
+    }
+
+    private static final String CLOSING = "Grazie per aver condiviso questo ricordo. " +
+            "Quando vuoi, premi 'Fine' per salvarlo e renderlo parte della memoria della tua famiglia.";
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -44,29 +88,45 @@ public class IrisServlet extends HttpServlet {
             return;
         }
 
-        String stepParam = req.getParameter("step");
-        int step = (stepParam == null) ? 0 : Integer.parseInt(stepParam);
+        int step;
+        try { step = Integer.parseInt(Optional.ofNullable(req.getParameter("step")).orElse("0")); }
+        catch (NumberFormatException e) { step = 0; }
 
-        Map<String, Object> response;
-        if (step == 0) {
-            // primo turno: due messaggi di benvenuto (miglioramento #5 Assignment 3)
-            response = Map.of(
-                    "messages", WELCOME,
-                    "hasMore", true,
-                    "nextStep", 1
-            );
-        } else if (step - 1 < QUESTIONS.size()) {
-            response = Map.of(
-                    "messages", List.of(QUESTIONS.get(step - 1)),
-                    "hasMore", step < QUESTIONS.size(),
-                    "nextStep", step + 1
-            );
+        String theme = req.getParameter("theme");
+
+        Map<String, Object> response = new LinkedHashMap<>();
+
+        // --- STEP 0: benvenuto + scelta tema ---
+        if (step == 0 || theme == null || !QUESTIONS.containsKey(theme)) {
+            response.put("messages", List.of(
+                    "Ciao, sono Iris! Sono qui per aiutarti a raccogliere un ricordo speciale.",
+                    "Di cosa vorresti parlarmi oggi? Scegli pure dalle opzioni qui sotto."
+            ));
+            // themes -> lista di {id, label}
+            List<Map<String, String>> themes = new ArrayList<>();
+            THEMES.forEach((id, label) -> themes.add(Map.of("id", id, "label", label)));
+            response.put("themes", themes);
+            response.put("hasMore", true);
+            response.put("nextStep", 1);
+            resp.getWriter().write(JsonUtil.GSON.toJson(response));
+            return;
+        }
+
+        // --- STEP N: domanda del tema ---
+        List<String> questions = QUESTIONS.get(theme);
+        int qIndex = step - 1;
+
+        if (qIndex < questions.size()) {
+            response.put("messages", List.of(questions.get(qIndex)));
+            response.put("hasMore", qIndex < questions.size() - 1);
+            response.put("nextStep", step + 1);
+            response.put("theme", theme);
         } else {
-            response = Map.of(
-                    "messages", List.of("Grazie per aver condiviso questo ricordo. Quando vuoi, premi 'Fine' per salvarlo."),
-                    "hasMore", false,
-                    "nextStep", step
-            );
+            // Fine delle domande per il tema
+            response.put("messages", List.of(CLOSING));
+            response.put("hasMore", false);
+            response.put("nextStep", step);
+            response.put("theme", theme);
         }
 
         resp.getWriter().write(JsonUtil.GSON.toJson(response));

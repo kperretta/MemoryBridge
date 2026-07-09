@@ -667,3 +667,29 @@ h3 { font-size: 18px; margin-bottom: 8px; }
     0%, 100% { opacity: 1; transform: scale(1); }
     50% { opacity: 0.4; transform: scale(0.85); }
 }
+
+/* Quick-reply buttons dei temi di Iris (T1) */
+.theme-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-self: flex-start;
+    max-width: 90%;
+    margin: 4px 0 8px;
+}
+
+.theme-btn {
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 14px;
+    border: 1px solid var(--primary);
+    background: var(--card);
+    color: var(--primary-dark);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.theme-btn:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-1px);
+}

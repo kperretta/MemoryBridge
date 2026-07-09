@@ -43,13 +43,18 @@ function renderProfile(p) {
 
 function renderMediaBlock(m) {
     if (!m.mediaId) return '';
-    if (m.type === 'photo' || m.type === 'image') {
+    const ct = m.mediaContentType || '';
+    const isImage = m.type === 'photo' || m.type === 'image' || ct.startsWith('image/');
+    const isAudio = m.type === 'audio' || ct.startsWith('audio/');
+    const isVideo = m.type === 'video' || ct.startsWith('video/');
+
+    if (isImage) {
         return `<img src="api/media?id=${m.mediaId}" style="max-width:100%;max-height:300px;border-radius:8px;margin:10px 0;display:block">`;
     }
-    if (m.type === 'audio') {
+    if (isAudio) {
         return `<audio controls src="api/media?id=${m.mediaId}" style="width:100%;margin:10px 0"></audio>`;
     }
-    if (m.type === 'video') {
+    if (isVideo) {
         return `<video controls src="api/media?id=${m.mediaId}" style="max-width:100%;max-height:300px;border-radius:8px;margin:10px 0"></video>`;
     }
     return '';

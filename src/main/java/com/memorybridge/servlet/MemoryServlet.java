@@ -96,6 +96,13 @@ public class MemoryServlet extends HttpServlet {
         map.put("createdAt", m.getCreatedAt() != null ? m.getCreatedAt().toString() : null);
         map.put("mediaId", m.getMediaId());
 
+        // Include anche il content-type del media (se presente) cosi' il frontend
+        // decide come renderizzare anche se il campo type e' stato salvato male.
+        if (m.getMediaId() != null) {
+            var media = DataStore.get().findMedia(m.getMediaId());
+            if (media != null) map.put("mediaContentType", media.getContentType());
+        }
+
         User author = DataStore.get().findUser(m.getAuthorId());
         map.put("authorName", author != null ? author.getFullName() : "Utente sconosciuto");
 

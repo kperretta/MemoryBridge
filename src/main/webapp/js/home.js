@@ -1,4 +1,4 @@
-/* T5 - Feed della famiglia con visualizzazione e commento dei contenuti */
+/* T5 - Feed della famiglia con foto/audio/video renderizzati inline */
 
 (async function init() {
     await requireAuth();
@@ -9,7 +9,6 @@
 async function loadFeed() {
     const feedEl = document.getElementById('feed');
     feedEl.innerHTML = '<p class="text-muted">Caricamento…</p>';
-
     try {
         const memories = await api.get('/api/memories');
         if (memories.length === 0) {
@@ -25,6 +24,21 @@ async function loadFeed() {
     }
 }
 
+function renderMediaBlock(m) {
+    if (!m.mediaId) return '';
+    if (m.type === 'photo' || m.type === 'image') {
+        return `<img src="api/media?id=${m.mediaId}" style="max-width:100%;max-height:400px;border-radius:8px;margin:12px 0;display:block">`;
+    }
+    if (m.type === 'audio') {
+        return `<audio controls src="api/media?id=${m.mediaId}" style="width:100%;margin:12px 0"></audio>`;
+    }
+    if (m.type === 'video') {
+        return `<video controls src="api/media?id=${m.mediaId}" style="max-width:100%;max-height:400px;border-radius:8px;margin:12px 0"></video>`;
+    }
+    // fallback: link generico
+    return `<p><a href="api/media?id=${m.mediaId}" target="_blank">Apri allegato</a></p>`;
+}
+
 function renderPost(m) {
     const el = document.createElement('article');
     el.className = 'feed-post';
@@ -37,7 +51,8 @@ function renderPost(m) {
             </div>
         </div>
         ${m.title ? `<div class="post-title">${escapeHtml(m.title)}</div>` : ''}
-        <div class="post-content">${escapeHtml(m.content).replace(/\n/g, '<br>')}</div>
+        ${renderMediaBlock(m)}
+        ${m.content ? `<div class="post-content">${escapeHtml(m.content).replace(/\n/g, '<br>')}</div>` : ''}
         ${m.taggedPersonName ? `<div class="post-tag">📌 ${m.taggedPersonName}</div>` : ''}
         <div class="comment-list" data-memory-id="${m.id}">
             <p class="text-muted" style="font-size:13px">Caricamento commenti…</p>
@@ -47,10 +62,8 @@ function renderPost(m) {
             <button type="submit" class="btn btn-secondary">Invia</button>
         </form>
     `;
-    // Carica commenti in background
     loadComments(m.id, el.querySelector('.comment-list'));
 
-    // Gestione submit commento
     el.querySelector('.comment-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const input = e.target.querySelector('input');
@@ -64,7 +77,6 @@ function renderPost(m) {
             alert('Errore: ' + err.message);
         }
     });
-
     return el;
 }
 

@@ -17,6 +17,7 @@ public class Memory {
     private String eventDate;      // data del fatto ricordato (opzionale, "yyyy-MM-dd")
     private LocalDateTime createdAt;
     private String familyCode;
+    private Long mediaId;          // riferimento a MediaFile (foto/audio/video)
 
     public Memory() {}
 
@@ -62,4 +63,7 @@ public class Memory {
 
     public String getFamilyCode() { return familyCode; }
     public void setFamilyCode(String familyCode) { this.familyCode = familyCode; }
+
+    public Long getMediaId() { return mediaId; }
+    public void setMediaId(Long mediaId) { this.mediaId = mediaId; }
 }

@@ -18,6 +18,7 @@ public class DataStore {
     private final Map<Long, FamilyMember> familyMembers = new ConcurrentHashMap<>();
     private final Map<Long, Memory> memories = new ConcurrentHashMap<>();
     private final Map<Long, Comment> comments = new ConcurrentHashMap<>();
+    private final Map<Long, MediaFile> media = new ConcurrentHashMap<>();
 
     // Codici di invito generati, mappati al familyCode a cui appartengono
     private final Map<String, String> inviteCodes = new ConcurrentHashMap<>();
@@ -26,6 +27,7 @@ public class DataStore {
     private final AtomicLong familyMemberSeq = new AtomicLong(0);
     private final AtomicLong memorySeq = new AtomicLong(0);
     private final AtomicLong commentSeq = new AtomicLong(0);
+    private final AtomicLong mediaSeq = new AtomicLong(0);
 
     private DataStore() {}
     public static DataStore get() { return INSTANCE; }
@@ -130,5 +132,18 @@ public class DataStore {
 
     public String familyCodeForInvite(String inviteCode) {
         return inviteCodes.get(inviteCode);
+    }
+
+    // ==================== MEDIA ====================
+
+    public MediaFile addMedia(byte[] data, String contentType, String originalName) {
+        MediaFile m = new MediaFile(data, contentType, originalName);
+        m.setId(mediaSeq.incrementAndGet());
+        media.put(m.getId(), m);
+        return m;
+    }
+
+    public MediaFile findMedia(Long id) {
+        return id == null ? null : media.get(id);
     }
 }

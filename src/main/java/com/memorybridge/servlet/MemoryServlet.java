@@ -94,6 +94,7 @@ public class MemoryServlet extends HttpServlet {
         map.put("description", m.getDescription());
         map.put("eventDate", m.getEventDate());
         map.put("createdAt", m.getCreatedAt() != null ? m.getCreatedAt().toString() : null);
+        map.put("mediaId", m.getMediaId());
 
         User author = DataStore.get().findUser(m.getAuthorId());
         map.put("authorName", author != null ? author.getFullName() : "Utente sconosciuto");

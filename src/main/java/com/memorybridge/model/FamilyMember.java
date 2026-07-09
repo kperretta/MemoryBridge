@@ -19,6 +19,7 @@ public class FamilyMember {
     private Long fatherId;
     private Long spouseId;
     private String familyCode;     // a quale famiglia appartiene
+    private Long mediaId;          // foto profilo del membro
 
     public FamilyMember() {}
 
@@ -72,6 +73,9 @@ public class FamilyMember {
 
     public String getFamilyCode() { return familyCode; }
     public void setFamilyCode(String familyCode) { this.familyCode = familyCode; }
+
+    public Long getMediaId() { return mediaId; }
+    public void setMediaId(Long mediaId) { this.mediaId = mediaId; }
 
     public String getFullName() { return firstName + " " + lastName; }
 }

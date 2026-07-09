@@ -1,8 +1,8 @@
-/* T3 - Albero genealogico con menu contestuale, aggiunta e modifica membri */
+/* T3 - Albero genealogico con foto profilo dei membri */
 
 let allMembers = [];
 let selectedNode = null;
-let newMemberDefaults = {};   // per pre-compilare il form (es. padre da nodo cliccato)
+let newMemberDefaults = {};
 
 (async function init() {
     await requireAuth();
@@ -16,26 +16,19 @@ async function loadTree(highlightId) {
     populateParentSelects();
 }
 
-/** Raggruppa i membri per "generazione" in base all'anno di nascita */
 function renderTree(members, highlightId) {
     const container = document.getElementById('tree');
     container.innerHTML = '';
-
     if (members.length === 0) {
         container.innerHTML = '<p class="text-muted">Nessun membro. Aggiungi il primo!</p>';
         return;
     }
-
-    // Ordino per anno di nascita e raggruppo per decadi di 20 anni per "generazione"
     const generations = groupByGeneration(members);
-
     generations.forEach((gen, idx) => {
         const genDiv = document.createElement('div');
         genDiv.className = 'generation';
         gen.forEach(m => genDiv.appendChild(renderNode(m, m.id === highlightId)));
         container.appendChild(genDiv);
-
-        // connettore tra generazioni
         if (idx < generations.length - 1) {
             const conn = document.createElement('div');
             conn.className = 'connector';
@@ -45,12 +38,10 @@ function renderTree(members, highlightId) {
 }
 
 function groupByGeneration(members) {
-    // Semplice: raggruppo per intervalli di 25 anni a partire dal più vecchio
     const sorted = [...members]
         .filter(m => m.birthDate)
         .sort((a, b) => a.birthDate.localeCompare(b.birthDate));
     if (sorted.length === 0) return [members];
-
     const startYear = parseInt(sorted[0].birthDate.substring(0, 4));
     const generations = [];
     members.forEach(m => {
@@ -65,8 +56,14 @@ function groupByGeneration(members) {
 function renderNode(m, highlight) {
     const el = document.createElement('div');
     el.className = 'tree-node' + (highlight ? ' new-highlight' : '');
+
+    // Se il membro ha una foto, la mostro; altrimenti iniziali
+    const photoHtml = m.mediaId
+        ? `<div class="tree-node-photo" style="overflow:hidden;padding:0"><img src="api/media?id=${m.mediaId}" style="width:100%;height:100%;object-fit:cover"></div>`
+        : `<div class="tree-node-photo">${initials(m.firstName + ' ' + m.lastName)}</div>`;
+
     el.innerHTML = `
-        <div class="tree-node-photo">${initials(m.firstName + ' ' + m.lastName)}</div>
+        ${photoHtml}
         <div class="tree-node-name">${m.firstName} ${m.lastName}</div>
         <div class="tree-node-dates">${formatYearRange(m)}</div>
     `;
@@ -80,15 +77,14 @@ function formatYearRange(m) {
     return y2 ? `${y1} – ${y2}` : `n. ${y1}`;
 }
 
-/* ========== MENU CONTESTUALE NODO ========== */
+/* ===== MENU CONTESTUALE ===== */
 function openNodeMenu(m) {
     selectedNode = m;
     document.getElementById('node-menu-name').textContent = m.firstName + ' ' + m.lastName;
     document.getElementById('node-menu').classList.remove('hidden');
 }
-function closeNodeMenu() {
-    document.getElementById('node-menu').classList.add('hidden');
-}
+function closeNodeMenu() { document.getElementById('node-menu').classList.add('hidden'); }
+window.closeNodeMenu = closeNodeMenu;
 
 document.getElementById('view-profile-btn').addEventListener('click', () => {
     if (selectedNode) window.location.href = `profile.html?id=${selectedNode.id}`;
@@ -99,36 +95,31 @@ document.getElementById('edit-btn').addEventListener('click', () => {
 });
 document.getElementById('add-child-btn').addEventListener('click', () => {
     closeNodeMenu();
-    // Pre-compila padre o madre in base al genere del nodo selezionato
     newMemberDefaults = {};
     if (selectedNode.gender === 'M') newMemberDefaults.fatherId = selectedNode.id;
     else if (selectedNode.gender === 'F') newMemberDefaults.motherId = selectedNode.id;
     openAddModal();
 });
-// Invito familiare (T6): mostra codice e link
 document.getElementById('invite-btn').addEventListener('click', async () => {
     closeNodeMenu();
     try {
         const r = await api.post('/api/invite', {});
-        const msg = `Codice invito: ${r.inviteCode}\n\nLink:\n${r.inviteLink}`;
-        // Copia link negli appunti
         try { await navigator.clipboard.writeText(r.inviteLink); } catch {}
         window.location.href = `invite.html?code=${r.inviteCode}&link=${encodeURIComponent(r.inviteLink)}`;
-    } catch (e) {
-        alert('Errore: ' + e.message);
-    }
+    } catch (e) { alert('Errore: ' + e.message); }
 });
 
-/* ========== FORM AGGIUNGI/MODIFICA ========== */
+/* ===== FORM AGGIUNGI/MODIFICA ===== */
 function openAddModal() {
     document.getElementById('modal-title').textContent = 'Aggiungi familiare';
     document.getElementById('member-form').reset();
     document.getElementById('member-id').value = '';
-    // Pre-compila padre/madre se veniamo da "Aggiungi figlio/a"
+    document.getElementById('m-photo-preview').innerHTML = '';
     if (newMemberDefaults.fatherId) document.getElementById('m-father').value = newMemberDefaults.fatherId;
     if (newMemberDefaults.motherId) document.getElementById('m-mother').value = newMemberDefaults.motherId;
     document.getElementById('member-modal').classList.remove('hidden');
 }
+window.openAddModal = openAddModal;
 
 function openEditModal(m) {
     document.getElementById('modal-title').textContent = 'Modifica familiare';
@@ -142,6 +133,12 @@ function openEditModal(m) {
     document.getElementById('m-father').value = m.fatherId || '';
     document.getElementById('m-mother').value = m.motherId || '';
     document.getElementById('m-description').value = m.description || '';
+
+    const preview = document.getElementById('m-photo-preview');
+    preview.innerHTML = m.mediaId
+        ? `<img src="api/media?id=${m.mediaId}" style="max-width:100px;border-radius:8px;margin-top:8px">
+           <p class="text-muted" style="font-size:12px">Foto attuale (carica un nuovo file per sostituirla)</p>`
+        : '';
     document.getElementById('member-modal').classList.remove('hidden');
 }
 
@@ -149,6 +146,23 @@ function closeMemberModal() {
     document.getElementById('member-modal').classList.add('hidden');
     newMemberDefaults = {};
 }
+window.closeMemberModal = closeMemberModal;
+
+// Preview immediata della foto scelta
+document.getElementById('m-photo').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    const preview = document.getElementById('m-photo-preview');
+    if (!file) { preview.innerHTML = ''; return; }
+    if (!file.type.startsWith('image/')) {
+        preview.innerHTML = '<p class="error-message">Seleziona un\'immagine</p>';
+        return;
+    }
+    const r = new FileReader();
+    r.onload = ev => {
+        preview.innerHTML = `<img src="${ev.target.result}" style="max-width:100px;border-radius:8px;margin-top:8px">`;
+    };
+    r.readAsDataURL(file);
+});
 
 function populateParentSelects() {
     const fatherSel = document.getElementById('m-father');
@@ -165,6 +179,8 @@ function populateParentSelects() {
 document.getElementById('member-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const id = document.getElementById('member-id').value;
+    const photoFile = document.getElementById('m-photo').files[0];
+
     const body = {
         firstName: document.getElementById('m-firstName').value.trim(),
         lastName: document.getElementById('m-lastName').value.trim(),
@@ -178,9 +194,28 @@ document.getElementById('member-form').addEventListener('submit', async (e) => {
     };
 
     try {
+        // Upload della foto se presente
+        if (photoFile) {
+            const fd = new FormData();
+            fd.append('file', photoFile);
+            const r = await fetch('api/media', {
+                method: 'POST',
+                credentials: 'include',
+                body: fd
+            });
+            if (!r.ok) throw new Error('Upload foto fallito');
+            const { id: mediaId } = await r.json();
+            body.mediaId = mediaId;
+        }
+
         let saved;
         if (id) {
             body.id = parseInt(id);
+            // Se non ho caricato foto nuova, mantengo la mediaId esistente
+            if (!photoFile) {
+                const existing = allMembers.find(x => x.id === body.id);
+                if (existing && existing.mediaId) body.mediaId = existing.mediaId;
+            }
             saved = await api.put('/api/tree', body);
             toast('Familiare aggiornato');
         } else {
@@ -188,7 +223,6 @@ document.getElementById('member-form').addEventListener('submit', async (e) => {
             toast('Familiare aggiunto');
         }
         closeMemberModal();
-        // Miglioramento #6: highlight temporaneo sul nodo nuovo/aggiornato
         await loadTree(saved.id);
     } catch (err) {
         const el = document.getElementById('member-error');

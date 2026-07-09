@@ -5,6 +5,7 @@ import com.memorybridge.model.User;
 import com.memorybridge.util.JsonUtil;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
+import jakarta.servlet.http.Cookie;
 
 import java.io.IOException;
 
@@ -38,9 +39,17 @@ public class MeServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        // logout: distrugge la sessione
+        // logout: distrugge la sessione E cancella il cookie
         HttpSession session = req.getSession(false);
         if (session != null) session.invalidate();
+
+        // Cancella esplicitamente il cookie JSESSIONID lato browser
+        Cookie killCookie = new Cookie("JSESSIONID", "");
+        killCookie.setPath(req.getContextPath().isEmpty() ? "/" : req.getContextPath());
+        killCookie.setMaxAge(0);
+        killCookie.setHttpOnly(true);
+        resp.addCookie(killCookie);
+
         resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
     }
 }

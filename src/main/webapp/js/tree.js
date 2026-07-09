@@ -1,8 +1,18 @@
-/* T3 - Albero genealogico con foto profilo dei membri */
+/* T3 - Albero genealogico: menu 4 azioni, aggiunta per relazione, eliminazione */
 
 let allMembers = [];
 let selectedNode = null;
-let newMemberDefaults = {};
+let pendingRelation = null;   // {relation, targetId} per il collegamento automatico
+
+const RELATIONS = [
+    { id: 'mother',  label: 'Madre' },
+    { id: 'father',  label: 'Padre' },
+    { id: 'spouse',  label: 'Coniuge' },
+    { id: 'brother', label: 'Fratello' },
+    { id: 'sister',  label: 'Sorella' },
+    { id: 'son',     label: 'Figlio' },
+    { id: 'daughter',label: 'Figlia' }
+];
 
 (async function init() {
     await requireAuth();
@@ -13,7 +23,6 @@ let newMemberDefaults = {};
 async function loadTree(highlightId) {
     allMembers = await api.get('/api/tree');
     renderTree(allMembers, highlightId);
-    populateParentSelects();
 }
 
 function renderTree(members, highlightId) {
@@ -38,8 +47,7 @@ function renderTree(members, highlightId) {
 }
 
 function groupByGeneration(members) {
-    const sorted = [...members]
-        .filter(m => m.birthDate)
+    const sorted = [...members].filter(m => m.birthDate)
         .sort((a, b) => a.birthDate.localeCompare(b.birthDate));
     if (sorted.length === 0) return [members];
     const startYear = parseInt(sorted[0].birthDate.substring(0, 4));
@@ -56,12 +64,9 @@ function groupByGeneration(members) {
 function renderNode(m, highlight) {
     const el = document.createElement('div');
     el.className = 'tree-node' + (highlight ? ' new-highlight' : '');
-
-    // Se il membro ha una foto, la mostro; altrimenti iniziali
     const photoHtml = m.mediaId
         ? `<div class="tree-node-photo" style="overflow:hidden;padding:0"><img src="api/media?id=${m.mediaId}" style="width:100%;height:100%;object-fit:cover"></div>`
         : `<div class="tree-node-photo">${initials(m.firstName + ' ' + m.lastName)}</div>`;
-
     el.innerHTML = `
         ${photoHtml}
         <div class="tree-node-name">${m.firstName} ${m.lastName}</div>
@@ -77,7 +82,7 @@ function formatYearRange(m) {
     return y2 ? `${y1} – ${y2}` : `n. ${y1}`;
 }
 
-/* ===== MENU CONTESTUALE ===== */
+/* ============ MENU CONTESTUALE: 4 azioni ============ */
 function openNodeMenu(m) {
     selectedNode = m;
     document.getElementById('node-menu-name').textContent = m.firstName + ' ' + m.lastName;
@@ -86,43 +91,80 @@ function openNodeMenu(m) {
 function closeNodeMenu() { document.getElementById('node-menu').classList.add('hidden'); }
 window.closeNodeMenu = closeNodeMenu;
 
-document.getElementById('view-profile-btn').addEventListener('click', () => {
+document.getElementById('open-timeline-btn').addEventListener('click', () => {
     if (selectedNode) window.location.href = `profile.html?id=${selectedNode.id}`;
 });
+
 document.getElementById('edit-btn').addEventListener('click', () => {
     closeNodeMenu();
     openEditModal(selectedNode);
 });
-document.getElementById('add-child-btn').addEventListener('click', () => {
+
+document.getElementById('add-relative-btn').addEventListener('click', () => {
     closeNodeMenu();
-    newMemberDefaults = {};
-    if (selectedNode.gender === 'M') newMemberDefaults.fatherId = selectedNode.id;
-    else if (selectedNode.gender === 'F') newMemberDefaults.motherId = selectedNode.id;
-    openAddModal();
-});
-document.getElementById('invite-btn').addEventListener('click', async () => {
-    closeNodeMenu();
-    try {
-        const r = await api.post('/api/invite', {});
-        try { await navigator.clipboard.writeText(r.inviteLink); } catch {}
-        window.location.href = `invite.html?code=${r.inviteCode}&link=${encodeURIComponent(r.inviteLink)}`;
-    } catch (e) { alert('Errore: ' + e.message); }
+    openRelationModal(selectedNode);
 });
 
-/* ===== FORM AGGIUNGI/MODIFICA ===== */
-function openAddModal() {
+document.getElementById('delete-btn').addEventListener('click', async () => {
+    if (!selectedNode) return;
+    const name = selectedNode.firstName + ' ' + selectedNode.lastName;
+    if (!confirm(`Vuoi davvero eliminare ${name} dall'albero?\n\nI ricordi associati resteranno salvati ma non saranno più collegati a questa persona.`)) return;
+    try {
+        await api.del(`/api/tree?id=${selectedNode.id}`);
+        closeNodeMenu();
+        toast(`${name} eliminato dall'albero`);
+        await loadTree();
+    } catch (e) {
+        alert('Errore: ' + e.message);
+    }
+});
+
+/* ============ PICKER RELAZIONE ============ */
+function openRelationModal(target) {
+    document.getElementById('relation-target-name').textContent = target.firstName;
+    const grid = document.getElementById('relation-grid');
+    grid.innerHTML = '';
+    RELATIONS.forEach(r => {
+        const b = document.createElement('button');
+        b.className = 'relation-btn';
+        b.textContent = r.label;
+        b.onclick = () => {
+            pendingRelation = { relation: r.id, targetId: target.id };
+            closeRelationModal();
+            openAddFlow(r);
+        };
+        grid.appendChild(b);
+    });
+    document.getElementById('relation-modal').classList.remove('hidden');
+}
+function closeRelationModal() { document.getElementById('relation-modal').classList.add('hidden'); }
+window.closeRelationModal = closeRelationModal;
+
+/* ============ FORM AGGIUNGI / MODIFICA ============ */
+function openAddFlow(relation) {
     document.getElementById('modal-title').textContent = 'Aggiungi familiare';
     document.getElementById('member-form').reset();
     document.getElementById('member-id').value = '';
     document.getElementById('m-photo-preview').innerHTML = '';
-    if (newMemberDefaults.fatherId) document.getElementById('m-father').value = newMemberDefaults.fatherId;
-    if (newMemberDefaults.motherId) document.getElementById('m-mother').value = newMemberDefaults.motherId;
+
+    const hint = document.getElementById('relation-hint');
+    if (relation && selectedNode) {
+        hint.textContent = `Stai aggiungendo: ${relation.label} di ${selectedNode.firstName} ${selectedNode.lastName}. Il collegamento all'albero sarà automatico.`;
+        // Pre-imposto il genere in base alla relazione
+        if (['mother', 'sister', 'daughter'].includes(relation.id)) document.getElementById('m-gender').value = 'F';
+        if (['father', 'brother', 'son'].includes(relation.id)) document.getElementById('m-gender').value = 'M';
+    } else {
+        hint.textContent = '';
+        pendingRelation = null;
+    }
     document.getElementById('member-modal').classList.remove('hidden');
 }
-window.openAddModal = openAddModal;
+window.openAddFlow = openAddFlow;
 
 function openEditModal(m) {
+    pendingRelation = null;
     document.getElementById('modal-title').textContent = 'Modifica familiare';
+    document.getElementById('relation-hint').textContent = '';
     document.getElementById('member-id').value = m.id;
     document.getElementById('m-firstName').value = m.firstName || '';
     document.getElementById('m-lastName').value = m.lastName || '';
@@ -130,51 +172,27 @@ function openEditModal(m) {
     document.getElementById('m-birthDate').value = m.birthDate || '';
     document.getElementById('m-deathDate').value = m.deathDate || '';
     document.getElementById('m-birthPlace').value = m.birthPlace || '';
-    document.getElementById('m-father').value = m.fatherId || '';
-    document.getElementById('m-mother').value = m.motherId || '';
     document.getElementById('m-description').value = m.description || '';
-
-    const preview = document.getElementById('m-photo-preview');
-    preview.innerHTML = m.mediaId
-        ? `<img src="api/media?id=${m.mediaId}" style="max-width:100px;border-radius:8px;margin-top:8px">
-           <p class="text-muted" style="font-size:12px">Foto attuale (carica un nuovo file per sostituirla)</p>`
+    document.getElementById('m-photo-preview').innerHTML = m.mediaId
+        ? `<img src="api/media?id=${m.mediaId}" style="max-width:100px;border-radius:8px;margin-top:8px">`
         : '';
     document.getElementById('member-modal').classList.remove('hidden');
 }
 
 function closeMemberModal() {
     document.getElementById('member-modal').classList.add('hidden');
-    newMemberDefaults = {};
+    pendingRelation = null;
 }
 window.closeMemberModal = closeMemberModal;
 
-// Preview immediata della foto scelta
 document.getElementById('m-photo').addEventListener('change', (e) => {
     const file = e.target.files[0];
     const preview = document.getElementById('m-photo-preview');
     if (!file) { preview.innerHTML = ''; return; }
-    if (!file.type.startsWith('image/')) {
-        preview.innerHTML = '<p class="error-message">Seleziona un\'immagine</p>';
-        return;
-    }
     const r = new FileReader();
-    r.onload = ev => {
-        preview.innerHTML = `<img src="${ev.target.result}" style="max-width:100px;border-radius:8px;margin-top:8px">`;
-    };
+    r.onload = ev => preview.innerHTML = `<img src="${ev.target.result}" style="max-width:100px;border-radius:8px;margin-top:8px">`;
     r.readAsDataURL(file);
 });
-
-function populateParentSelects() {
-    const fatherSel = document.getElementById('m-father');
-    const motherSel = document.getElementById('m-mother');
-    fatherSel.innerHTML = '<option value="">— Nessuno —</option>';
-    motherSel.innerHTML = '<option value="">— Nessuna —</option>';
-    allMembers.forEach(m => {
-        const label = `${m.firstName} ${m.lastName}`;
-        if (m.gender === 'M' || !m.gender) fatherSel.innerHTML += `<option value="${m.id}">${label}</option>`;
-        if (m.gender === 'F' || !m.gender) motherSel.innerHTML += `<option value="${m.id}">${label}</option>`;
-    });
-}
 
 document.getElementById('member-form').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -188,21 +206,14 @@ document.getElementById('member-form').addEventListener('submit', async (e) => {
         birthDate: document.getElementById('m-birthDate').value || null,
         deathDate: document.getElementById('m-deathDate').value || null,
         birthPlace: document.getElementById('m-birthPlace').value.trim(),
-        fatherId: document.getElementById('m-father').value ? parseInt(document.getElementById('m-father').value) : null,
-        motherId: document.getElementById('m-mother').value ? parseInt(document.getElementById('m-mother').value) : null,
         description: document.getElementById('m-description').value.trim()
     };
 
     try {
-        // Upload della foto se presente
         if (photoFile) {
             const fd = new FormData();
             fd.append('file', photoFile);
-            const r = await fetch('api/media', {
-                method: 'POST',
-                credentials: 'include',
-                body: fd
-            });
+            const r = await fetch('api/media', { method: 'POST', credentials: 'include', body: fd });
             if (!r.ok) throw new Error('Upload foto fallito');
             const { id: mediaId } = await r.json();
             body.mediaId = mediaId;
@@ -211,16 +222,23 @@ document.getElementById('member-form').addEventListener('submit', async (e) => {
         let saved;
         if (id) {
             body.id = parseInt(id);
-            // Se non ho caricato foto nuova, mantengo la mediaId esistente
-            if (!photoFile) {
-                const existing = allMembers.find(x => x.id === body.id);
-                if (existing && existing.mediaId) body.mediaId = existing.mediaId;
+            const existing = allMembers.find(x => x.id === body.id);
+            if (existing) {
+                if (!photoFile && existing.mediaId) body.mediaId = existing.mediaId;
+                body.motherId = existing.motherId;
+                body.fatherId = existing.fatherId;
+                body.spouseId = existing.spouseId;
             }
             saved = await api.put('/api/tree', body);
             toast('Familiare aggiornato');
         } else {
+            // Collegamento automatico in base alla relazione scelta
+            if (pendingRelation) applyRelationToNewMember(body, pendingRelation);
             saved = await api.post('/api/tree', body);
-            toast('Familiare aggiunto');
+
+            // Alcune relazioni richiedono di aggiornare anche il nodo esistente
+            if (pendingRelation) await applyRelationToTarget(saved, pendingRelation);
+            toast('Familiare aggiunto e collegato all\'albero');
         }
         closeMemberModal();
         await loadTree(saved.id);
@@ -230,3 +248,63 @@ document.getElementById('member-form').addEventListener('submit', async (e) => {
         el.classList.remove('hidden');
     }
 });
+
+/** Imposta i legami sul NUOVO membro in base alla relazione col target */
+function applyRelationToNewMember(newBody, rel) {
+    const target = allMembers.find(m => m.id === rel.targetId);
+    if (!target) return;
+
+    switch (rel.relation) {
+        case 'son':
+        case 'daughter':
+            // Il nuovo è figlio/a del target
+            if (target.gender === 'F') newBody.motherId = target.id;
+            else newBody.fatherId = target.id;
+            // Se il target ha un coniuge, e' l'altro genitore
+            if (target.spouseId) {
+                const spouse = allMembers.find(m => m.id === target.spouseId);
+                if (spouse) {
+                    if (spouse.gender === 'F') newBody.motherId = spouse.id;
+                    else newBody.fatherId = spouse.id;
+                }
+            }
+            break;
+        case 'brother':
+        case 'sister':
+            // Stesso padre e stessa madre del target
+            newBody.motherId = target.motherId || null;
+            newBody.fatherId = target.fatherId || null;
+            break;
+        case 'spouse':
+            newBody.spouseId = target.id;
+            break;
+        // mother/father: il legame va messo sul TARGET, non sul nuovo (fatto dopo)
+    }
+}
+
+/** Aggiorna il nodo TARGET quando serve (madre, padre, coniuge) */
+async function applyRelationToTarget(savedNew, rel) {
+    const target = allMembers.find(m => m.id === rel.targetId);
+    if (!target) return;
+
+    let needsUpdate = false;
+    const targetUpdate = { ...target };
+
+    switch (rel.relation) {
+        case 'mother':
+            targetUpdate.motherId = savedNew.id;
+            needsUpdate = true;
+            break;
+        case 'father':
+            targetUpdate.fatherId = savedNew.id;
+            needsUpdate = true;
+            break;
+        case 'spouse':
+            targetUpdate.spouseId = savedNew.id;
+            needsUpdate = true;
+            break;
+    }
+    if (needsUpdate) {
+        await api.put('/api/tree', targetUpdate);
+    }
+}

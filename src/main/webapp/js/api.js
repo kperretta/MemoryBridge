@@ -17,7 +17,7 @@ const api = {
         return url;
     },
 
-    async _request(method, url, data) {
+    async _request(method, url, data, isRetry) {
         const opts = {
             method,
             credentials: 'include',
@@ -30,7 +30,6 @@ const api = {
         const r = await fetch(this._resolveUrl(url), opts);
 
         if (r.status === 401) {
-            // Redirect al login SOLO se non siamo gia' su una pagina pubblica
             const currentPage = window.location.pathname.split('/').pop();
             if (!PUBLIC_PAGES.includes(currentPage)) {
                 window.location.href = 'index.html';
@@ -39,10 +38,17 @@ const api = {
         }
 
         const text = await r.text();
+
+        // Auto-retry: se ricevo HTML e non ho gia' ritentato, aspetto 800ms e riprovo
+        // (protegge da micro-redeploy di Tomcat/IntelliJ dopo logout)
+        if (text && text.trim().startsWith('<') && !isRetry) {
+            await new Promise(res => setTimeout(res, 800));
+            return this._request(method, url, data, true);
+        }
+
         if (text && text.trim().startsWith('<')) {
-            throw new Error(`Il server ha restituito HTML invece di JSON. ` +
-                `URL: ${this._resolveUrl(url)}. ` +
-                `Controlla il context path o che i servlet siano compilati.`);
+            throw new Error(`Il server non risponde correttamente. ` +
+                `Riprova tra qualche secondo o ricarica la pagina.`);
         }
         const json = text ? JSON.parse(text) : null;
         if (!r.ok) {
@@ -98,3 +104,6 @@ function initials(name) {
     if (!name) return '?';
     return name.split(' ').filter(Boolean).map(p => p[0].toUpperCase()).slice(0, 2).join('');
 }
+
+
+

@@ -10,80 +10,99 @@
 <div id="navbar-slot"></div>
 
 <main class="container-narrow">
-    <a href="tree.html" class="text-muted" style="font-size:14px">← Torna all'albero</a>
-
     <h1 class="mt-2">Invita un familiare</h1>
-    <p class="text-muted mb-2">Condividi il codice o il link qui sotto: chi lo riceve potrà registrarsi
-        e unirsi alla tua famiglia su Memory Bridge.</p>
 
-    <div class="card">
-        <div class="form-group">
-            <label>Codice invito</label>
-            <div class="flex-row">
-                <input type="text" id="code-input" readonly style="font-family:monospace;font-size:18px">
-                <button class="btn btn-secondary" onclick="copyText('code-input')">Copia</button>
+    <!-- STEP 1: domanda -->
+    <section id="inv-step-question">
+        <div class="card text-center">
+            <p style="font-size:18px;font-weight:600;margin-bottom:20px">
+                La persona che vuoi invitare è già presente nell'albero genealogico?
+            </p>
+            <div style="display:flex;gap:14px;flex-wrap:wrap">
+                <button class="big-btn primary" style="flex:1" id="inv-yes-btn">Sì, è nell'albero</button>
+                <button class="big-btn secondary" style="flex:1" id="inv-no-btn">No, devo aggiungerla</button>
             </div>
         </div>
+    </section>
 
-        <div class="form-group">
-            <label>Link diretto</label>
-            <div class="flex-row">
-                <input type="text" id="link-input" readonly>
-                <button class="btn btn-secondary" onclick="copyText('link-input')">Copia</button>
+    <!-- STEP 2a: seleziona dall'albero -->
+    <section id="inv-step-select" class="hidden">
+        <div class="card">
+            <h3>Chi vuoi invitare?</h3>
+            <p class="text-muted mb-2">Seleziona la persona dall'albero genealogico.</p>
+            <div id="inv-member-list" style="display:flex;flex-direction:column;gap:6px"></div>
+            <button class="btn btn-outline mt-2" onclick="invShowStep('inv-step-question')">← Indietro</button>
+        </div>
+    </section>
+
+    <!-- STEP 2b: form nuovo familiare -->
+    <section id="inv-step-form" class="hidden">
+        <div class="card">
+            <h3>Aggiungi il nuovo familiare</h3>
+            <p class="text-muted mb-2">Verrà inserito nell'albero e riceverà il link di invito.</p>
+            <form id="inv-member-form">
+                <div class="form-group">
+                    <label for="inv-firstName">Nome</label>
+                    <input type="text" id="inv-firstName" required>
+                </div>
+                <div class="form-group">
+                    <label for="inv-lastName">Cognome</label>
+                    <input type="text" id="inv-lastName" required>
+                </div>
+                <div class="form-group">
+                    <label for="inv-gender">Genere</label>
+                    <select id="inv-gender">
+                        <option value="F">Femmina</option>
+                        <option value="M">Maschio</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="inv-birthDate">Data di nascita</label>
+                    <input type="date" id="inv-birthDate">
+                </div>
+                <div id="inv-form-error" class="error-message hidden"></div>
+                <div class="flex-row" style="justify-content:flex-end;gap:10px">
+                    <button type="button" class="btn btn-outline" onclick="invShowStep('inv-step-question')">← Indietro</button>
+                    <button type="submit" class="big-btn primary">Aggiungi e genera invito</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- STEP 3: link generato -->
+    <section id="inv-step-link" class="hidden">
+        <div class="card">
+            <h3 id="inv-link-title">Invito pronto!</h3>
+            <p class="text-muted mb-2" id="inv-link-subtitle"></p>
+
+            <div class="form-group">
+                <label>Codice invito</label>
+                <div class="flex-row">
+                    <input type="text" id="code-input" readonly style="font-family:monospace;font-size:18px">
+                    <button class="btn btn-secondary" onclick="copyText('code-input')">Copia</button>
+                </div>
             </div>
-        </div>
+            <div class="form-group">
+                <label>Link diretto</label>
+                <div class="flex-row">
+                    <input type="text" id="link-input" readonly>
+                    <button class="btn btn-secondary" onclick="copyText('link-input')">Copia</button>
+                </div>
+            </div>
 
-        <h3 class="mt-3">Condividi via</h3>
-        <!-- Miglioramento #7 Assignment 3: bottoni di condivisione rapida -->
-        <div class="flex-row mt-1" style="flex-wrap:wrap">
-            <a id="wa-btn" class="btn btn-primary" target="_blank" rel="noopener">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3.5A11 11 0 0 0 3.7 17.2L2 22l4.9-1.6a11 11 0 0 0 16.6-9.5c0-2.9-1.2-5.7-3-7.4zm-8.6 16.9a9 9 0 0 1-4.7-1.3l-.3-.2-3 1 1-2.8-.2-.3a9 9 0 1 1 7.2 3.6z"/></svg>
-                WhatsApp
-            </a>
-            <a id="mail-btn" class="btn btn-outline">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                Email
-            </a>
-            <a id="tg-btn" class="btn btn-outline" target="_blank" rel="noopener">Telegram</a>
+            <h3 class="mt-3">Condividi via</h3>
+            <div class="flex-row mt-1" style="flex-wrap:wrap">
+                <a id="wa-btn" class="big-btn primary" target="_blank" rel="noopener" style="flex:1">WhatsApp</a>
+                <a id="mail-btn" class="big-btn outline" style="flex:1">Email</a>
+                <a id="tg-btn" class="big-btn outline" target="_blank" rel="noopener" style="flex:1">Telegram</a>
+            </div>
+            <button class="btn btn-outline btn-block mt-2" onclick="window.location.href='home.html'">Torna alla Home</button>
         </div>
-    </div>
+    </section>
 </main>
 
 <script src="js/api.js"></script>
 <script src="js/navbar.js"></script>
-<script>
-    (async function init() {
-        await requireAuth();
-        renderNavbar();
-
-        // Se code/link vengono passati per query, li uso.
-        const params = new URLSearchParams(window.location.search);
-        let code = params.get('code');
-        let link = params.get('link');
-
-        // Altrimenti ne genero uno nuovo
-        if (!code || !link) {
-            const r = await api.post('/api/invite', {});
-            code = r.inviteCode;
-            link = r.inviteLink;
-        }
-
-        document.getElementById('code-input').value = code;
-        document.getElementById('link-input').value = link;
-
-        const msg = `Ciao! Unisciti alla nostra famiglia su Memory Bridge per raccogliere e conservare i nostri ricordi insieme: ${link}`;
-
-        document.getElementById('wa-btn').href = `https://wa.me/?text=${encodeURIComponent(msg)}`;
-        document.getElementById('tg-btn').href = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent('Unisciti a Memory Bridge!')}`;
-        document.getElementById('mail-btn').href = `mailto:?subject=${encodeURIComponent('Ti invito su Memory Bridge')}&body=${encodeURIComponent(msg)}`;
-    })();
-
-    function copyText(id) {
-        const el = document.getElementById(id);
-        el.select();
-        document.execCommand('copy');
-        toast('Copiato negli appunti');
-    }
-</script>
+<script src="js/invite.js"></script>
 </body>
 </html>

@@ -67,6 +67,36 @@ public class TreeServlet extends HttpServlet {
     }
 
     @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+
+        HttpSession session = req.getSession(false);
+        if (session == null || session.getAttribute("familyCode") == null) {
+            resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            resp.getWriter().write("{\"error\":\"Non autenticato\"}");
+            return;
+        }
+        String familyCode = (String) session.getAttribute("familyCode");
+
+        String idParam = req.getParameter("id");
+        if (idParam == null) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("{\"error\":\"ID mancante\"}");
+            return;
+        }
+        Long id = Long.parseLong(idParam);
+        FamilyMember existing = DataStore.get().findFamilyMember(id);
+        if (existing == null || !familyCode.equals(existing.getFamilyCode())) {
+            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            resp.getWriter().write("{\"error\":\"Membro non trovato\"}");
+            return;
+        }
+        DataStore.get().deleteFamilyMember(id);
+        resp.getWriter().write("{\"deleted\":true}");
+    }
+
+    @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");

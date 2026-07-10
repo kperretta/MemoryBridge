@@ -55,4 +55,18 @@ public class User {
     public void setMediaId(Long mediaId) { this.mediaId = mediaId; }
 
     public String getFullName() { return firstName + " " + lastName; }
+
+    public User toSafeCopy() {
+        User copy = new User();
+        copy.id = this.id;
+        copy.firstName = this.firstName;
+        copy.lastName = this.lastName;
+        copy.email = this.email;
+        copy.password = null;              // esclusa
+        copy.familyCode = this.familyCode;
+        copy.avatarUrl = this.avatarUrl;
+        copy.familyMemberId = this.familyMemberId;
+        copy.mediaId = this.mediaId;
+        return copy;
+    }
 }

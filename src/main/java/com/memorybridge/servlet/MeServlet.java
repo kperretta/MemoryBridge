@@ -33,8 +33,7 @@ public class MeServlet extends HttpServlet {
             return;
         }
 
-        u.setPassword(null);
-        resp.getWriter().write(JsonUtil.GSON.toJson(u));
+        resp.getWriter().write(JsonUtil.GSON.toJson(u.toSafeCopy()));
     }
 
     @Override

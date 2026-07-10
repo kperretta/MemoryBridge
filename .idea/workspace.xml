@@ -9,9 +9,42 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b36b1a15-c51e-4c3f-8a8d-6a46c344b8bf" name="Changes" comment="Risoluzione errori nell'home, gestione db simulato e modifiche css e html">
+    <list default="true" id="b36b1a15-c51e-4c3f-8a8d-6a46c344b8bf" name="Changes" comment="Risoluzione errore accesso con credenziali.">
+      <change afterPath="$PROJECT_DIR$/src/main/resources/demo-media/andrea-bottega.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/demo-media/andrea-rossi.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/demo-media/angelica-classe.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/demo-media/angelica-verdi.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/demo-media/chiara-rossi.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/demo-media/concetta-bruno.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/demo-media/davide-rossi.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/demo-media/elena-costa.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/demo-media/giuseppe-pesca.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/demo-media/giuseppe-rossi.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/demo-media/laura-neri.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/demo-media/leonardo-rossi.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/demo-media/luca-rossi.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/demo-media/lucia-ferrari.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/demo-media/lucia-rossi.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/demo-media/luigi-rossi.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/demo-media/luigi-trasloco.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/demo-media/marco-rossi.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/demo-media/maria-agnolotti.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/demo-media/maria-primo-giorno.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/demo-media/maria-rossi.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/demo-media/paolo-davide-napoli.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/demo-media/paolo-rossi.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/demo-media/sofia-bicicletta.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/demo-media/sofia-rossi.jpg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/memorybridge/model/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/memorybridge/model/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/memorybridge/listener/AppInitListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/memorybridge/listener/AppInitListener.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/memorybridge/servlet/CommentServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/memorybridge/servlet/CommentServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/memorybridge/servlet/MediaServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/memorybridge/servlet/MediaServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/memorybridge/servlet/MemoryServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/memorybridge/servlet/MemoryServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/create.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/create.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/css/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/css/style.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/home.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/js/home.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/js/home.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/register.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -56,27 +89,31 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;Tomcat Server.Tomcat 11.0.41.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/ireneiuorio/Desktop/MemoryBridge/src/main/webapp/img/site&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;vcs.Git&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "Tomcat Server.Tomcat 11.0.41.executor": "Run",
+    "git-widget-placeholder": "master",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/ireneiuorio/Desktop/MemoryBridge/src/main/resources/demo-media",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "vcs.Git",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/main/resources/demo-media" />
       <recent name="$PROJECT_DIR$/src/main/webapp/img/site" />
       <recent name="$PROJECT_DIR$/src/main/webapp/img/logo" />
       <recent name="$PROJECT_DIR$" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/main/resources/demo-media" />
     </key>
   </component>
   <component name="RunManager">
@@ -194,7 +231,7 @@
       <workItem from="1783457539920" duration="883000" />
       <workItem from="1783623270895" duration="9438000" />
       <workItem from="1783632846677" duration="724000" />
-      <workItem from="1783674937024" duration="16000" />
+      <workItem from="1783674937024" duration="8356000" />
     </task>
     <task id="LOCAL-00001" summary=" Implementazione iniziale Memory Bridge">
       <option name="closed" value="true" />
@@ -252,7 +289,15 @@
       <option name="project" value="LOCAL" />
       <updated>1783669965844</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Risoluzione errore accesso con credenziali.">
+      <option name="closed" value="true" />
+      <created>1783675243797</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1783675243797</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -262,6 +307,7 @@
     <MESSAGE value=" Implementazione iniziale Memory Bridge" />
     <MESSAGE value="upload reale di media (foto/audio/video) e registrazione audio in chat" />
     <MESSAGE value="Risoluzione errori nell'home, gestione db simulato e modifiche css e html" />
-    <option name="LAST_COMMIT_MESSAGE" value="Risoluzione errori nell'home, gestione db simulato e modifiche css e html" />
+    <MESSAGE value="Risoluzione errore accesso con credenziali." />
+    <option name="LAST_COMMIT_MESSAGE" value="Risoluzione errore accesso con credenziali." />
   </component>
 </project>

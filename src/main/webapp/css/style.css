@@ -1,46 +1,52 @@
 /* ============================================================
    Memory Bridge – Style (coerente col logo)
-   Crema calda, azzurro cielo più chiaro, tocchi dorati
+   Crema calda del cerchio, azzurro cielo del wordmark,
+   dorato della cornice, tocchi nocciola/marrone del gufetto
    ============================================================ */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-    /* palette — azzurro cielo del wordmark, più chiaro */
-    --primary: #5B9CE0;
-    --primary-dark: #3A79B5;
-    --primary-hover: #4A8AD1;
-    --primary-light: #BFDCF3;
-    --primary-lighter: #E8F2FB;
-    --primary-ghost: rgba(91, 156, 224, 0.07);
+    /* palette — azzurro cielo del wordmark "Bridge", leggermente più profondo per eleganza */
+    --primary: #4E85BF;
+    --primary-dark: #33628F;
+    --primary-hover: #3F73A9;
+    --primary-light: #C7DDEF;
+    --primary-lighter: #EFF4F9;
+    --primary-ghost: rgba(78, 133, 191, 0.06);
 
-    /* accenti caldi dal logo */
-    --accent: #F0A45C;         /* arancio tramonto sotto il ponte */
-    --accent-light: #FCEBD7;
-    --gold: #D4B94A;           /* cornice dorata */
-    --gold-soft: #EDDFAA;
+    /* accenti smorzati, quasi antichi — tramonto e cornice dorata del logo */
+    --accent: #D99364;         /* terracotta, non più arancio acceso */
+    --accent-light: #F6E9DD;
+    --gold: #B99652;           /* oro anticato, meno giallo */
+    --gold-soft: #EDE2C9;
 
-    /* neutri puliti */
-    --bg: #F7F8FA;             /* pagina neutra */
-    --bg-warm: #FBFBFC;
+    /* nocciola del gufetto — tocco discreto */
+    --owl-brown: #7A5A3E;
+    --owl-brown-dark: #5C4430;
+    --owl-cream: #F2EBDD;
+
+    /* neutri — quasi bianco, non più beige */
+    --bg: #FBFAF8;
+    --bg-warm: #FFFFFF;
     --card: #FFFFFF;
-    --border: rgba(15, 23, 42, 0.07);
-    --border-strong: rgba(15, 23, 42, 0.12);
-    --text: #1F2937;
-    --text-muted: #6B7280;
-    --text-light: #9CA3AF;
-    --danger: #D9564F;
+    --border: rgba(38, 34, 30, 0.07);
+    --border-strong: rgba(38, 34, 30, 0.12);
+    --text: #262220;           /* carbone profondo, elegante */
+    --text-muted: #7D746A;
+    --text-light: #ACA398;
+    --danger: #C25650;
     --danger-light: #FBEEED;
-    --success: #4CAE7A;
+    --success: #4A9A72;
 
-    /* layout */
-    --radius: 16px;
-    --radius-lg: 24px;
+    /* layout — angoli più contenuti, più rigore */
+    --radius: 12px;
+    --radius-lg: 18px;
     --radius-pill: 999px;
-    --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
-    --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.05), 0 0 0 1px rgba(15, 23, 42, 0.03);
-    --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.07), 0 0 0 1px rgba(15, 23, 42, 0.03);
-    --shadow-lg: 0 16px 48px rgba(15, 23, 42, 0.10), 0 4px 12px rgba(15, 23, 42, 0.05);
-    --shadow-glow: 0 0 0 3px rgba(91, 156, 224, 0.14);
+    --shadow-xs: 0 1px 2px rgba(38, 34, 30, 0.04);
+    --shadow-sm: 0 2px 10px rgba(38, 34, 30, 0.05), 0 0 0 1px rgba(38, 34, 30, 0.03);
+    --shadow-md: 0 10px 28px rgba(38, 34, 30, 0.07), 0 0 0 1px rgba(38, 34, 30, 0.03);
+    --shadow-lg: 0 20px 56px rgba(38, 34, 30, 0.10), 0 4px 14px rgba(38, 34, 30, 0.04);
+    --shadow-glow: 0 0 0 3px rgba(78, 133, 191, 0.13);
     --nav-height: 68px;
     --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
     --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -67,7 +73,7 @@ a:hover { text-decoration: underline; text-underline-offset: 2px; }
    Navbar — vetro caldo con filo dorato in basso
    ============================================================ */
 .navbar {
-    background: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 253, 248, 0.85);
     backdrop-filter: blur(18px) saturate(1.4);
     -webkit-backdrop-filter: blur(18px) saturate(1.4);
     border-bottom: 1px solid var(--border);
@@ -111,7 +117,7 @@ a:hover { text-decoration: underline; text-underline-offset: 2px; }
 .navbar .nav-links a.active {
     background: var(--primary);
     color: white;
-    box-shadow: 0 2px 10px rgba(91, 156, 224, 0.35);
+    box-shadow: 0 2px 10px rgba(78, 133, 191, 0.35);
 }
 
 .navbar .user-badge {
@@ -140,7 +146,7 @@ a:hover { text-decoration: underline; text-underline-offset: 2px; }
     padding: 36px 28px;
 }
 
-h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 16px; color: var(--text); }
+h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.4px; margin-bottom: 16px; color: var(--text); }
 h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 12px; color: var(--text); }
 h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; color: var(--text); }
 
@@ -189,11 +195,11 @@ h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; color: var(--text); 
 .btn-primary {
     background: var(--primary);
     color: white;
-    box-shadow: 0 2px 10px rgba(91, 156, 224, 0.30);
+    box-shadow: 0 2px 10px rgba(78, 133, 191, 0.30);
 }
 .btn-primary:hover {
     background: var(--primary-hover);
-    box-shadow: 0 4px 16px rgba(91, 156, 224, 0.35);
+    box-shadow: 0 4px 16px rgba(78, 133, 191, 0.35);
     transform: translateY(-1px);
 }
 
@@ -220,9 +226,9 @@ h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; color: var(--text); 
 .btn-danger {
     background: var(--danger);
     color: white;
-    box-shadow: 0 2px 10px rgba(217, 86, 79, 0.22);
+    box-shadow: 0 2px 10px rgba(194, 86, 80, 0.22);
 }
-.btn-danger:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(217, 86, 79, 0.30); }
+.btn-danger:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(194, 86, 80, 0.30); }
 
 .btn-block { width: 100%; }
 
@@ -301,7 +307,7 @@ h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; color: var(--text); 
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: linear-gradient(145deg, var(--primary), #7DB5EA);
+    background: linear-gradient(145deg, var(--owl-brown), var(--accent));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -309,7 +315,7 @@ h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; color: var(--text); 
     font-size: 28px;
     font-weight: 700;
     flex-shrink: 0;
-    box-shadow: 0 4px 16px rgba(91, 156, 224, 0.30);
+    box-shadow: 0 4px 16px rgba(122, 90, 62, 0.30);
 }
 
 .chat-messages {
@@ -339,11 +345,11 @@ h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; color: var(--text); 
 }
 
 .msg-user {
-    background: linear-gradient(135deg, var(--primary), #7DB5EA);
+    background: linear-gradient(135deg, var(--primary), #6FA0CE);
     color: white;
     align-self: flex-end;
     border-bottom-right-radius: 6px;
-    box-shadow: 0 2px 10px rgba(91, 156, 224, 0.25);
+    box-shadow: 0 2px 10px rgba(78, 133, 191, 0.25);
 }
 
 .msg.typing {
@@ -422,14 +428,14 @@ h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; color: var(--text); 
     width: 42px;
     height: 42px;
     border-radius: 50%;
-    background: linear-gradient(145deg, var(--primary), #7DB5EA);
+    background: linear-gradient(145deg, var(--primary), #6FA0CE);
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
     font-size: 15px;
-    box-shadow: 0 2px 8px rgba(91, 156, 224, 0.20);
+    box-shadow: 0 2px 8px rgba(78, 133, 191, 0.20);
 }
 
 .post-author {
@@ -460,9 +466,9 @@ h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; color: var(--text); 
 .post-tag {
     display: inline-block;
     background: var(--primary-lighter);
-    color: var(--primary-dark);
+    color: var();
     padding: 5px 14px;
-    border-radius: var(--radius-pill);
+    border-radius: var(--primary-light);
     font-size: 12.5px;
     font-weight: 600;
     margin-top: 8px;
@@ -536,21 +542,21 @@ h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; color: var(--text); 
 }
 @keyframes highlightNew {
     0%, 100% { border-color: var(--primary-light); background: var(--bg-warm); }
-    50% { border-color: var(--gold); background: var(--gold-soft); box-shadow: 0 0 24px rgba(212, 185, 74, 0.35); }
+    50% { border-color: var(--gold); background: var(--gold-soft); box-shadow: 0 0 24px rgba(185, 150, 82, 0.35); }
 }
 
 .tree-node-photo {
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background: linear-gradient(145deg, var(--primary), #7DB5EA);
+    background: linear-gradient(145deg, var(--primary), #6FA0CE);
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 24px;
     margin: 0 auto 10px;
-    box-shadow: 0 3px 12px rgba(91, 156, 224, 0.25);
+    box-shadow: 0 3px 12px rgba(78, 133, 191, 0.25);
 }
 
 .tree-node-name { font-weight: 700; font-size: 14px; }
@@ -588,7 +594,7 @@ h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; color: var(--text); 
     border-radius: 50%;
     background: var(--primary);
     border: 3px solid var(--card);
-    box-shadow: 0 0 0 2.5px var(--primary), 0 2px 8px rgba(91, 156, 224, 0.25);
+    box-shadow: 0 0 0 2.5px var(--primary), 0 2px 8px rgba(78, 133, 191, 0.25);
 }
 
 .timeline-date {
@@ -605,7 +611,7 @@ h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; color: var(--text); 
 .modal-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(46, 42, 37, 0.45);
+    background: rgba(61, 46, 26, 0.45);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
     display: flex;
@@ -688,7 +694,8 @@ h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; color: var(--text); 
 .auth-card .subtitle {
     text-align: center;
     color: var(--text-muted);
-    margin-bottom: 28px;
+    margin-bottom: 5px;
+    margin-top: 5px;
     font-size: 15px;
 }
 
@@ -774,7 +781,7 @@ h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; color: var(--text); 
     color: white;
     border-color: var(--primary);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(91, 156, 224, 0.25);
+    box-shadow: 0 4px 12px rgba(78, 133, 191, 0.25);
 }
 
 /* ============================================================
@@ -800,13 +807,13 @@ h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; color: var(--text); 
 .big-btn.primary {
     background: var(--primary);
     color: white;
-    box-shadow: 0 4px 16px rgba(91, 156, 224, 0.30);
+    box-shadow: 0 4px 16px rgba(78, 133, 191, 0.30);
 }
-.big-btn.primary:hover { background: var(--primary-hover); box-shadow: 0 6px 24px rgba(91, 156, 224, 0.35); }
+.big-btn.primary:hover { background: var(--primary-hover); box-shadow: 0 6px 24px rgba(78, 133, 191, 0.35); }
 .big-btn.secondary { background: var(--primary-lighter); color: var(--primary-dark); }
 .big-btn.outline { background: var(--card); color: var(--text); border: 2px solid var(--border-strong); }
 .big-btn.outline:hover { border-color: var(--primary-light); }
-.big-btn.danger { background: var(--danger); color: white; box-shadow: 0 4px 16px rgba(217, 86, 79, 0.22); }
+.big-btn.danger { background: var(--danger); color: white; box-shadow: 0 4px 16px rgba(194, 86, 80, 0.22); }
 .big-btn.full { width: 100%; }
 
 /* ============================================================
@@ -815,7 +822,7 @@ h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; color: var(--text); 
 .post-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(46, 42, 37, 0.55);
+    background: rgba(61, 46, 26, 0.55);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     z-index: 1500;
@@ -840,7 +847,7 @@ h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; color: var(--text); 
     position: relative;
     transform: scale(0.92) translateY(20px);
     transition: transform 0.35s var(--ease-out);
-    box-shadow: 0 32px 80px rgba(46, 42, 37, 0.28), 0 0 0 1px rgba(74, 60, 30, 0.05);
+    box-shadow: 0 32px 80px rgba(61, 46, 26, 0.28), 0 0 0 1px rgba(107, 69, 39, 0.06);
 }
 .post-overlay.open .post-overlay-inner { transform: scale(1) translateY(0); }
 
@@ -953,12 +960,12 @@ h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; color: var(--text); 
     height: 72px;
     margin: 0 auto 16px;
     border-radius: 50%;
-    background: linear-gradient(145deg, var(--primary), #7DB5EA);
+    background: linear-gradient(145deg, var(--primary), #6FA0CE);
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 16px rgba(91, 156, 224, 0.25);
+    box-shadow: 0 4px 16px rgba(78, 133, 191, 0.25);
 }
 .type-card .type-label { font-size: 19px; font-weight: 700; letter-spacing: -0.2px; }
 @media (max-width: 640px) { .type-choice-grid { grid-template-columns: 1fr; } }
@@ -991,13 +998,13 @@ h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; color: var(--text); 
     height: 44px;
     flex-shrink: 0;
     border-radius: 50%;
-    background: linear-gradient(145deg, var(--primary), #7DB5EA);
+    background: linear-gradient(145deg, var(--owl-brown), var(--accent));
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 22px;
-    box-shadow: 0 3px 10px rgba(91, 156, 224, 0.25);
+    box-shadow: 0 3px 10px rgba(122, 90, 62, 0.25);
 }
 .iris-banner h3 { margin: 0 0 5px; font-size: 16px; color: var(--primary-dark); }
 .iris-banner ul { margin: 6px 0 0 18px; font-size: 15px; line-height: 1.75; }
@@ -1053,10 +1060,10 @@ h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; color: var(--text); 
 .relative-chip:hover { background: var(--primary-lighter); }
 .relative-chip .chip-avatar {
     width: 38px; height: 38px; border-radius: 50%;
-    background: linear-gradient(145deg, var(--primary), #7DB5EA); color: white;
+    background: linear-gradient(145deg, var(--primary), #6FA0CE); color: white;
     display: flex; align-items: center; justify-content: center;
     font-size: 14px; font-weight: 700; overflow: hidden; flex-shrink: 0;
-    box-shadow: 0 2px 6px rgba(91, 156, 224, 0.20);
+    box-shadow: 0 2px 6px rgba(78, 133, 191, 0.20);
 }
 .relative-chip .chip-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .relative-chip .chip-role { font-size: 12px; color: var(--text-muted); }

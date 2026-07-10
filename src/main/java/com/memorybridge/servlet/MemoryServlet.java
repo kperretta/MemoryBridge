@@ -1,3 +1,4 @@
+
 package com.memorybridge.servlet;
 
 import com.memorybridge.data.DataStore;
@@ -82,7 +83,7 @@ public class MemoryServlet extends HttpServlet {
         resp.getWriter().write(JsonUtil.GSON.toJson(enrich(saved)));
     }
 
-    /** Aggiunge al ricordo il nome dell'autore e della persona taggata (per comodità del frontend). */
+    /** Aggiunge al ricordo il nome (e la foto) dell'autore e della persona taggata (per comodità del frontend). */
     private Map<String, Object> enrich(Memory m) {
         Map<String, Object> map = new LinkedHashMap<>();
         map.put("id", m.getId());
@@ -105,11 +106,31 @@ public class MemoryServlet extends HttpServlet {
 
         User author = DataStore.get().findUser(m.getAuthorId());
         map.put("authorName", author != null ? author.getFullName() : "Utente sconosciuto");
+        // Id della foto profilo dell'autore, usato dal frontend per l'avatar nell'header
+        // del post. Se null, il frontend mostra le iniziali come fallback.
+        map.put("authorAvatarMediaId", resolveAvatarMediaId(author));
 
         if (m.getTaggedPersonId() != null) {
             var tagged = DataStore.get().findFamilyMember(m.getTaggedPersonId());
             map.put("taggedPersonName", tagged != null ? tagged.getFullName() : null);
         }
         return map;
+    }
+
+    /**
+     * Determina l'id della foto da usare come avatar per un utente:
+     * 1) se l'utente ha una foto profilo propria (User.mediaId), usa quella;
+     * 2) altrimenti, se e' collegato a un nodo dell'albero che ha una foto
+     *    (FamilyMember.mediaId), riusa quella;
+     * 3) altrimenti null (il frontend mostrera' le iniziali).
+     */
+    private Long resolveAvatarMediaId(User author) {
+        if (author == null) return null;
+        if (author.getMediaId() != null) return author.getMediaId();
+        if (author.getFamilyMemberId() != null) {
+            var fm = DataStore.get().findFamilyMember(author.getFamilyMemberId());
+            if (fm != null) return fm.getMediaId();
+        }
+        return null;
     }
 }

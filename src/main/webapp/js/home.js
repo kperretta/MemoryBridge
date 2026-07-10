@@ -51,12 +51,24 @@ function renderMediaBlock(m, maxH = 400) {
     return `<p><a href="api/media?id=${m.mediaId}" target="_blank">Apri allegato</a></p>`;
 }
 
+/**
+ * Disegna l'avatar di un autore: se ha una foto profilo (avatarMediaId) mostra
+ * un'immagine tonda; altrimenti mostra le iniziali come prima (fallback).
+ */
+function renderAvatar(name, avatarMediaId) {
+    if (avatarMediaId) {
+        return `<img class="post-avatar" src="api/media?id=${avatarMediaId}" alt="${escapeHtml(name || '')}"
+                     style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0">`;
+    }
+    return `<div class="post-avatar">${initials(name)}</div>`;
+}
+
 function renderPost(m) {
     const el = document.createElement('article');
     el.className = 'feed-post';
     el.innerHTML = `
         <div class="post-header">
-            <div class="post-avatar">${initials(m.authorName)}</div>
+            ${renderAvatar(m.authorName, m.authorAvatarMediaId)}
             <div>
                 <div class="post-author">${m.authorName}</div>
                 <div class="post-meta">${formatDateTime(m.createdAt)}</div>
@@ -85,7 +97,7 @@ function openOverlay(m) {
     currentOverlayMemory = m;
     overlayContentEl.innerHTML = `
         <div class="post-header">
-            <div class="post-avatar">${initials(m.authorName)}</div>
+            ${renderAvatar(m.authorName, m.authorAvatarMediaId)}
             <div>
                 <div class="post-author">${m.authorName}</div>
                 <div class="post-meta">${formatDateTime(m.createdAt)}</div>
@@ -125,9 +137,12 @@ async function loadOverlayComments(memoryId) {
             return;
         }
         overlayCommentsListEl.innerHTML = comments.map(c => `
-            <div class="overlay-comment">
-                <span class="comment-author">${escapeHtml(c.authorName)}</span>
-                <span>${escapeHtml(c.text)}</span>
+            <div class="overlay-comment" style="display:flex;gap:8px;align-items:flex-start">
+                ${renderAvatar(c.authorName, c.authorAvatarMediaId)}
+                <div>
+                    <span class="comment-author">${escapeHtml(c.authorName)}</span>
+                    <span>${escapeHtml(c.text)}</span>
+                </div>
             </div>
         `).join('');
         overlayCommentsListEl.scrollTop = overlayCommentsListEl.scrollHeight;

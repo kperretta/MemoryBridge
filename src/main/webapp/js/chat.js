@@ -254,9 +254,28 @@ document.getElementById('save-btn').addEventListener('click', async () => {
             description: currentTheme ? `Racconto con Iris (tema: ${currentTheme})` : 'Racconto con Iris'
         });
         closePreview();
-        toast('Il tuo ricordo è stato salvato!');
-        setTimeout(() => window.location.href = 'home.html', 2000);
+        showPostSaveChoice();
     } catch (e) {
         alert('Errore: ' + e.message);
     }
 });
+
+/* Dopo il salvataggio: Iris chiede cosa fare, con due grandi pulsanti */
+function showPostSaveChoice() {
+    const backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop';
+    backdrop.innerHTML = `
+        <div class="modal text-center" style="max-width:420px">
+            <div style="font-size:56px;margin:8px 0"></div>
+            <h2>Ricordo salvato!</h2>
+            <p class="text-muted mb-2">Ora fa parte della storia della tua famiglia.<br>Cosa vuoi fare adesso?</p>
+            <div style="display:flex;flex-direction:column;gap:12px;margin-top:20px">
+                <button class="big-btn primary full" id="another-memory-btn">Racconta un altro ricordo</button>
+                <button class="big-btn secondary full" id="go-home-btn">Torna alla Home</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(backdrop);
+    document.getElementById('another-memory-btn').onclick = () => window.location.reload();
+    document.getElementById('go-home-btn').onclick = () => window.location.href = 'home.html';
+}

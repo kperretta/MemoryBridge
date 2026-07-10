@@ -35,7 +35,6 @@ public class LoginServlet extends HttpServlet {
         session.setAttribute("familyCode", u.getFamilyCode());
 
         // Non ritorno la password
-        u.setPassword(null);
-        resp.getWriter().write(JsonUtil.GSON.toJson(u));
+        resp.getWriter().write(JsonUtil.GSON.toJson(u.toSafeCopy()));
     }
 }

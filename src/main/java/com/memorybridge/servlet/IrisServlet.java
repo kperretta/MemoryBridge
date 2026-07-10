@@ -1,5 +1,8 @@
 package com.memorybridge.servlet;
 
+import com.memorybridge.data.DataStore;
+import com.memorybridge.model.FamilyMember;
+import com.memorybridge.model.Memory;
 import com.memorybridge.util.JsonUtil;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -88,6 +91,13 @@ public class IrisServlet extends HttpServlet {
             return;
         }
 
+        // --- Modalita' "personalita'": genera un profilo caratteriale del membro ---
+        String personalityParam = req.getParameter("personality");
+        if (personalityParam != null) {
+            handlePersonality(Long.parseLong(personalityParam), resp);
+            return;
+        }
+
         int step;
         try { step = Integer.parseInt(Optional.ofNullable(req.getParameter("step")).orElse("0")); }
         catch (NumberFormatException e) { step = 0; }
@@ -130,5 +140,66 @@ public class IrisServlet extends HttpServlet {
         }
 
         resp.getWriter().write(JsonUtil.GSON.toJson(response));
+    }
+
+    /**
+     * Genera un profilo "personalita'" del membro basato sui dati disponibili:
+     * epoca di nascita, luogo, descrizione, quantita' e temi dei ricordi collegati.
+     * E' una generazione template-based (non LLM): in produzione Iris userebbe
+     * un modello linguistico alimentato dai ricordi reali.
+     */
+    private void handlePersonality(Long memberId, HttpServletResponse resp) throws IOException {
+        FamilyMember m = DataStore.get().findFamilyMember(memberId);
+        if (m == null) {
+            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            resp.getWriter().write("{\"error\":\"Membro non trovato\"}");
+            return;
+        }
+
+        List<Memory> memories = DataStore.get().memoriesByPerson(memberId);
+        StringBuilder sb = new StringBuilder();
+
+        // Epoca
+        if (m.getBirthDate() != null && m.getBirthDate().length() >= 4) {
+            int year = Integer.parseInt(m.getBirthDate().substring(0, 4));
+            if (year < 1940) sb.append(m.getFirstName())
+                    .append(" appartiene a una generazione che ha attraversato tempi difficili e straordinari. ");
+            else if (year < 1965) sb.append(m.getFirstName())
+                    .append(" e' cresciuto/a negli anni della ricostruzione e del boom economico. ");
+            else if (year < 1990) sb.append(m.getFirstName())
+                    .append(" appartiene alla generazione ponte tra il mondo analogico e quello digitale. ");
+            else sb.append(m.getFirstName())
+                    .append(" e' nativo/a digitale, cresciuto/a in un mondo connesso. ");
+        }
+
+        // Luogo
+        if (m.getBirthPlace() != null && !m.getBirthPlace().isBlank()) {
+            sb.append("Le sue radici affondano a ").append(m.getBirthPlace()).append(". ");
+        }
+
+        // Descrizione
+        if (m.getDescription() != null && !m.getDescription().isBlank()) {
+            sb.append(m.getDescription()).append(" ");
+        }
+
+        // Ricordi
+        if (memories.isEmpty()) {
+            sb.append("Non ci sono ancora ricordi collegati: ogni contributo della famiglia ")
+              .append("aiutera' a ricostruire il suo ritratto.");
+        } else if (memories.size() == 1) {
+            sb.append("C'e' un ricordo custodito che parla di lui/lei: \"")
+              .append(memories.get(0).getTitle()).append("\".");
+        } else {
+            sb.append("La famiglia custodisce ").append(memories.size())
+              .append(" ricordi che lo/la riguardano, tra cui \"")
+              .append(memories.get(0).getTitle()).append("\". ")
+              .append("Ogni racconto aggiunge un tassello alla sua storia.");
+        }
+
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("memberId", memberId);
+        out.put("personality", sb.toString().trim());
+        out.put("memoriesCount", memories.size());
+        resp.getWriter().write(JsonUtil.GSON.toJson(out));
     }
 }

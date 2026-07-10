@@ -5,11 +5,7 @@ import com.memorybridge.model.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-
-/**
- * "Database" simulato in memoria. Singleton thread-safe.
- * I dati vengono persi al riavvio del server (AppInitListener li ricrea).
- */
+//Database simulato in memoria, Singleton thread-safe. I dati vengono persi al riavvio del server
 public class DataStore {
 
     private static final DataStore INSTANCE = new DataStore();
@@ -79,6 +75,17 @@ public class DataStore {
     public boolean updateFamilyMember(FamilyMember updated) {
         if (updated.getId() == null || !familyMembers.containsKey(updated.getId())) return false;
         familyMembers.put(updated.getId(), updated);
+        return true;
+    }
+
+    /** Elimina un membro e ripulisce i riferimenti (madre/padre/coniuge) negli altri nodi. */
+    public boolean deleteFamilyMember(Long id) {
+        if (id == null || familyMembers.remove(id) == null) return false;
+        familyMembers.values().forEach(m -> {
+            if (id.equals(m.getMotherId())) m.setMotherId(null);
+            if (id.equals(m.getFatherId())) m.setFatherId(null);
+            if (id.equals(m.getSpouseId())) m.setSpouseId(null);
+        });
         return true;
     }
 

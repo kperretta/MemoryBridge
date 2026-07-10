@@ -64,7 +64,6 @@ public class RegisterServlet extends HttpServlet {
         session.setAttribute("userId", u.getId());
         session.setAttribute("familyCode", u.getFamilyCode());
 
-        u.setPassword(null);
-        resp.getWriter().write(JsonUtil.GSON.toJson(u));
+        resp.getWriter().write(JsonUtil.GSON.toJson(u.toSafeCopy()));
     }
 }

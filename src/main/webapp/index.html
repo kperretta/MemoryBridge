@@ -9,7 +9,9 @@
 <body>
 <div class="auth-page">
     <div class="auth-card">
-        <h1>Memory Bridge</h1>
+
+        <img src="img/site/title.png" alt="Logo del sito" width="250" height="100" style="display: block; margin: 0 auto;">
+
         <p class="subtitle">Accedi per continuare a raccontare la tua storia</p>
 
         <form id="login-form">
@@ -37,8 +39,6 @@
 
 <script src="js/api.js"></script>
 <script>
-    // Se già loggato, vai in home
-    api.get('/api/me').then(() => window.location.href = 'home.html').catch(() => {});
 
     document.getElementById('login-form').addEventListener('submit', async (e) => {
         e.preventDefault();

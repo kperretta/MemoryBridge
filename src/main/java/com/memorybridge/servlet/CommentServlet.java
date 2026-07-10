@@ -80,6 +80,25 @@ public class CommentServlet extends HttpServlet {
 
         User author = DataStore.get().findUser(c.getAuthorId());
         map.put("authorName", author != null ? author.getFullName() : "Utente sconosciuto");
+        // Id della foto profilo di chi commenta, usato dal frontend per l'avatar.
+        map.put("authorAvatarMediaId", resolveAvatarMediaId(author));
         return map;
+    }
+
+    /**
+     * Determina l'id della foto da usare come avatar per un utente:
+     * 1) se l'utente ha una foto profilo propria (User.mediaId), usa quella;
+     * 2) altrimenti, se e' collegato a un nodo dell'albero che ha una foto
+     *    (FamilyMember.mediaId), riusa quella;
+     * 3) altrimenti null (il frontend mostrera' le iniziali).
+     */
+    private Long resolveAvatarMediaId(User author) {
+        if (author == null) return null;
+        if (author.getMediaId() != null) return author.getMediaId();
+        if (author.getFamilyMemberId() != null) {
+            var fm = DataStore.get().findFamilyMember(author.getFamilyMemberId());
+            if (fm != null) return fm.getMediaId();
+        }
+        return null;
     }
 }

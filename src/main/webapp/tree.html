@@ -13,29 +13,19 @@
             padding: 24px;
             align-items: center;
         }
-        .generation {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        .connector {
-            width: 3px;
-            height: 30px;
-            background: var(--primary-light);
-            margin: 0 auto;
-        }
+        .generation { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+        .connector { width: 3px; height: 30px; background: var(--primary-light); margin: 0 auto; }
     </style>
 </head>
 <body>
 <div id="navbar-slot"></div>
 
 <main class="container">
-    <div class="flex-row" style="justify-content:space-between;margin-bottom:16px">
+    <div class="flex-row" style="justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
         <h1 style="margin:0">Albero genealogico</h1>
-        <button class="btn btn-primary" onclick="openAddModal()">+ Aggiungi familiare</button>
+        <button class="big-btn primary" onclick="openAddFlow(null)">+ Aggiungi familiare</button>
     </div>
-    <p class="text-muted mb-2">Clicca su un membro per vedere il suo profilo o modificarne i dati.</p>
+    <p class="text-muted mb-2">Tocca un membro della famiglia per vedere le azioni disponibili.</p>
 
     <div class="tree-container">
         <div id="tree" class="tree-generations">
@@ -44,16 +34,43 @@
     </div>
 </main>
 
-<!-- Modal aggiungi/modifica familiare -->
+<!-- Menu contestuale nodo: 4 azioni richieste -->
+<div class="modal-backdrop hidden" id="node-menu">
+    <div class="modal" style="max-width:360px">
+        <div class="modal-header">
+            <h2 id="node-menu-name">…</h2>
+            <button class="modal-close" onclick="closeNodeMenu()">×</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+            <button class="big-btn primary full" id="open-timeline-btn">Apri Timeline</button>
+            <button class="big-btn secondary full" id="add-relative-btn">Aggiungi familiare</button>
+            <button class="big-btn outline full" id="edit-btn">✏Modifica persona</button>
+            <button class="big-btn danger full" id="delete-btn">Elimina persona</button>
+        </div>
+    </div>
+</div>
+
+<!-- Picker relazione -->
+<div class="modal-backdrop hidden" id="relation-modal">
+    <div class="modal" style="max-width:420px">
+        <div class="modal-header">
+            <h2>Che relazione ha con <span id="relation-target-name"></span>?</h2>
+            <button class="modal-close" onclick="closeRelationModal()">×</button>
+        </div>
+        <div class="relation-grid" id="relation-grid"></div>
+    </div>
+</div>
+
+<!-- Form dati familiare -->
 <div class="modal-backdrop hidden" id="member-modal">
     <div class="modal">
         <div class="modal-header">
             <h2 id="modal-title">Aggiungi familiare</h2>
             <button class="modal-close" onclick="closeMemberModal()">×</button>
         </div>
+        <p class="text-muted" id="relation-hint" style="margin-bottom:12px"></p>
         <form id="member-form">
             <input type="hidden" id="member-id">
-
             <div class="form-group">
                 <label for="m-firstName">Nome</label>
                 <input type="text" id="m-firstName" required>
@@ -82,48 +99,20 @@
                 <input type="text" id="m-birthPlace">
             </div>
             <div class="form-group">
-                <label for="m-father">Padre</label>
-                <select id="m-father"><option value="">— Nessuno —</option></select>
-            </div>
-            <div class="form-group">
-                <label for="m-mother">Madre</label>
-                <select id="m-mother"><option value="">— Nessuna —</option></select>
-            </div>
-            <div class="form-group">
                 <label for="m-description">Descrizione</label>
-                <textarea id="m-description" placeholder="Racconta brevemente chi era questa persona…"></textarea>
+                <textarea id="m-description" placeholder="Racconta brevemente chi è questa persona…"></textarea>
             </div>
-
             <div class="form-group">
                 <label for="m-photo">Foto profilo</label>
                 <input type="file" id="m-photo" accept="image/*">
                 <div id="m-photo-preview" class="mt-1"></div>
-                <small class="text-muted">Facoltativa. Verrà mostrata nell'albero e nel profilo.</small>
             </div>
-
             <div id="member-error" class="error-message hidden"></div>
-
             <div class="modal-actions">
-                <button type="button" class="btn btn-outline" onclick="closeMemberModal()">Annulla</button>
-                <button type="submit" class="btn btn-primary">Salva</button>
+                <button type="button" class="big-btn outline" onclick="closeMemberModal()">Annulla</button>
+                <button type="submit" class="big-btn primary">Salva</button>
             </div>
         </form>
-    </div>
-</div>
-
-<!-- Menu contestuale nodo -->
-<div class="modal-backdrop hidden" id="node-menu">
-    <div class="modal" style="max-width:340px">
-        <div class="modal-header">
-            <h2 id="node-menu-name">…</h2>
-            <button class="modal-close" onclick="closeNodeMenu()">×</button>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-            <button class="btn btn-primary" id="view-profile-btn">Apri profilo e timeline</button>
-            <button class="btn btn-secondary" id="edit-btn">Modifica</button>
-            <button class="btn btn-secondary" id="add-child-btn">Aggiungi figlio/a</button>
-            <button class="btn btn-secondary" id="invite-btn">Invita a Memory Bridge</button>
-        </div>
     </div>
 </div>
 

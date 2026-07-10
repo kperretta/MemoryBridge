@@ -20,7 +20,13 @@ import java.io.IOException;
  *                        il content-type corretto (usabile in <img>, <audio>, <video>)
  *
  * NOTA: i file sono tenuti in RAM (nel DataStore). Non c'e' persistenza
- * su disco: al riavvio di Tomcat scompaiono con tutti gli altri dati.
+ * su disco: al riavvio di Tomcat scompaiono con tutti gli altri dati, e
+ * gli id ripartono da 1. Per questo NON usiamo cache "immutable" a lungo
+ * termine: lo stesso id puo' corrispondere a un file diverso dopo un
+ * riavvio, e un browser che avesse gia' in cache "id=7" mostrerebbe la
+ * foto sbagliata (vecchio contenuto) senza mai richiederla di nuovo al
+ * server. Con "no-cache" il browser rivalida sempre con il server prima
+ * di riusare il contenuto in cache, evitando foto "fantasma".
  */
 @WebServlet("/api/media")
 @MultipartConfig(
@@ -53,8 +59,11 @@ public class MediaServlet extends HttpServlet {
 
         resp.setContentType(file.getContentType() != null ? file.getContentType() : "application/octet-stream");
         resp.setContentLength(file.getData().length);
-        // Cache aggressivo perche' i file sono immutabili una volta creati
-        resp.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+        // "no-cache" (non "no-store"): il browser puo' tenere il file in cache ma deve
+        // sempre rivalidarlo col server prima di riusarlo. Evita il problema delle foto
+        // "fantasma" quando lo stesso id viene riassegnato a un file diverso dopo un
+        // riavvio del server (dati in RAM -> id che ripartono da 1 ad ogni deploy).
+        resp.setHeader("Cache-Control", "no-cache");
         resp.getOutputStream().write(file.getData());
     }
 

@@ -7,22 +7,48 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<div id="navbar-slot"></div>
+
+<div id="navbar-slot">
+
+</div>
 
 <main class="container">
     <h1>I ricordi della tua famiglia</h1>
-    <p class="text-muted mb-2">Ecco cosa hanno condiviso i tuoi familiari</p>
+    <p class="text-muted mb-2">Ecco cosa hanno condiviso i tuoi familiari. Clicca su un ricordo per aprirlo.</p>
 
-    <div class="mt-2 mb-2 flex-row">
-        <a href="chat.html" class="btn btn-primary">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <div class="mt-2 mb-2 flex-row" style="flex-wrap:wrap">
+        <a href="create.html" class="big-btn primary">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Crea contenuto
+        </a>
+        <a href="chat.html" class="big-btn secondary">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             Racconta un ricordo
         </a>
-        <a href="upload.html" class="btn btn-secondary">Aggiungi contenuti</a>
+
+        <a href="chat.html" class="${activeSection === 'chat' ? 'active' : ''}" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: block;">
+            <img src="img/site/gufo.png" alt="Vai alla chat" style="width:120px; height:120px; object-fit: cover; border-radius: 50%;">
+        </a>
     </div>
 
     <div id="feed"></div>
 </main>
+
+<!-- Overlay split: contenuto a sinistra, commenti a destra -->
+<div class="post-overlay" id="post-overlay">
+    <div class="post-overlay-inner">
+        <button class="overlay-close" id="overlay-close" aria-label="Chiudi">×</button>
+        <div class="overlay-content" id="overlay-content"></div>
+        <div class="overlay-comments">
+            <div class="overlay-comments-header">Commenti</div>
+            <div class="overlay-comments-list" id="overlay-comments-list"></div>
+            <form class="overlay-comments-form" id="overlay-comment-form">
+                <input type="text" id="overlay-comment-input" placeholder="Scrivi un commento…" required>
+                <button type="submit" class="btn btn-primary">Invia</button>
+            </form>
+        </div>
+    </div>
+</div>
 
 <script src="js/api.js"></script>
 <script src="js/navbar.js"></script>

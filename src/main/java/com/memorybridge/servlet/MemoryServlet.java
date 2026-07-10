@@ -1,4 +1,3 @@
-
 package com.memorybridge.servlet;
 
 import com.memorybridge.data.DataStore;
@@ -33,6 +32,7 @@ public class MemoryServlet extends HttpServlet {
             return;
         }
         String familyCode = (String) session.getAttribute("familyCode");
+        Long viewerId = (Long) session.getAttribute("userId");
 
         String idParam = req.getParameter("id");
         String personParam = req.getParameter("personId");
@@ -44,7 +44,7 @@ public class MemoryServlet extends HttpServlet {
                 resp.getWriter().write("{\"error\":\"Ricordo non trovato\"}");
                 return;
             }
-            resp.getWriter().write(JsonUtil.GSON.toJson(enrich(m)));
+            resp.getWriter().write(JsonUtil.GSON.toJson(enrich(m, viewerId)));
             return;
         }
 
@@ -55,7 +55,7 @@ public class MemoryServlet extends HttpServlet {
             list = DataStore.get().memoriesByFamily(familyCode);
         }
 
-        List<Map<String, Object>> enriched = list.stream().map(this::enrich).toList();
+        List<Map<String, Object>> enriched = list.stream().map(m -> enrich(m, viewerId)).toList();
         resp.getWriter().write(JsonUtil.GSON.toJson(enriched));
     }
 
@@ -80,11 +80,12 @@ public class MemoryServlet extends HttpServlet {
         incoming.setCreatedAt(LocalDateTime.now());
 
         Memory saved = DataStore.get().addMemory(incoming);
-        resp.getWriter().write(JsonUtil.GSON.toJson(enrich(saved)));
+        resp.getWriter().write(JsonUtil.GSON.toJson(enrich(saved, userId)));
     }
 
-    /** Aggiunge al ricordo il nome (e la foto) dell'autore e della persona taggata (per comodità del frontend). */
-    private Map<String, Object> enrich(Memory m) {
+    /** Aggiunge al ricordo il nome (e la foto) dell'autore, della persona taggata,
+     *  e lo stato dei like — per comodità del frontend. */
+    private Map<String, Object> enrich(Memory m, Long viewerId) {
         Map<String, Object> map = new LinkedHashMap<>();
         map.put("id", m.getId());
         map.put("authorId", m.getAuthorId());
@@ -114,6 +115,11 @@ public class MemoryServlet extends HttpServlet {
             var tagged = DataStore.get().findFamilyMember(m.getTaggedPersonId());
             map.put("taggedPersonName", tagged != null ? tagged.getFullName() : null);
         }
+
+        // Like: conteggio totale + se l'utente che sta guardando ha già messo like.
+        map.put("likeCount", DataStore.get().likeCount(m.getId()));
+        map.put("likedByMe", viewerId != null && DataStore.get().hasLiked(m.getId(), viewerId));
+
         return map;
     }
 

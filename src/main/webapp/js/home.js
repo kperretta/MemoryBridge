@@ -63,6 +63,22 @@ function renderAvatar(name, avatarMediaId) {
     return `<div class="post-avatar">${initials(name)}</div>`;
 }
 
+/**
+ * Disegna il bottone like (cuore + conteggio). Usa data-memory-id per essere
+ * ritrovato da handleLikeClick e aggiornato ovunque compaia (feed + overlay).
+ */
+function renderLikeButton(m) {
+    const liked = !!m.likedByMe;
+    const count = m.likeCount || 0;
+    return `
+        <button class="like-btn ${liked ? 'liked' : ''}" data-memory-id="${m.id}" type="button" aria-pressed="${liked}" aria-label="Metti mi piace">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="${liked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8z"/>
+            </svg>
+            <span class="like-count">${count}</span>
+        </button>`;
+}
+
 function renderPost(m) {
     const el = document.createElement('article');
     el.className = 'feed-post';
@@ -78,15 +94,57 @@ function renderPost(m) {
         ${renderMediaBlock(m, 300)}
         ${m.content ? `<div class="post-content">${escapeHtml(truncate(m.content, 220)).replace(/\n/g, '<br>')}</div>` : ''}
         ${m.taggedPersonName ? `<div class="post-tag">${m.taggedPersonName}</div>` : ''}
-        <p class="text-muted mt-1" style="font-size:13px">Clicca per aprire e commentare →</p>
+        <div class="post-actions">
+            ${renderLikeButton(m)}
+            <p class="text-muted" style="font-size:13px;margin:0">Clicca per aprire e commentare →</p>
+        </div>
     `;
-    // Il click sul post apre l'overlay (ma non se cliccano su player audio/video)
+    // Il click sul post apre l'overlay (ma non se cliccano sul like o su player audio/video)
     el.addEventListener('click', (e) => {
         if (['AUDIO', 'VIDEO'].includes(e.target.tagName)) return;
+        if (e.target.closest('.like-btn')) return;
         openOverlay(m);
     });
     return el;
 }
+
+/* ============ LIKE (delegato su tutto il documento: funziona sia nel feed che nell'overlay) ============ */
+document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.like-btn');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (btn.disabled) return;
+
+    const memoryId = Number(btn.dataset.memoryId);
+    btn.disabled = true;
+    try {
+        const result = await api.post('/api/likes', { memoryId });
+
+        // Aggiorna il modello locale così, se il post viene ridisegnato, resta coerente
+        const m = feedMemories.find(x => x.id === memoryId);
+        if (m) { m.likedByMe = result.liked; m.likeCount = result.count; }
+        if (currentOverlayMemory && currentOverlayMemory.id === memoryId) {
+            currentOverlayMemory.likedByMe = result.liked;
+            currentOverlayMemory.likeCount = result.count;
+        }
+
+        // Aggiorna TUTTI i bottoni like di questo ricordo presenti in pagina
+        // (può comparire sia nella card del feed sia nell'overlay aperto)
+        document.querySelectorAll(`.like-btn[data-memory-id="${memoryId}"]`).forEach(b => {
+            b.classList.toggle('liked', result.liked);
+            b.setAttribute('aria-pressed', String(result.liked));
+            const svg = b.querySelector('svg');
+            if (svg) svg.setAttribute('fill', result.liked ? 'currentColor' : 'none');
+            const countEl = b.querySelector('.like-count');
+            if (countEl) countEl.textContent = result.count;
+        });
+    } catch (err) {
+        alert('Errore: ' + err.message);
+    } finally {
+        btn.disabled = false;
+    }
+});
 
 /* ============ OVERLAY SPLIT ============ */
 const overlayEl = document.getElementById('post-overlay');
@@ -108,6 +166,9 @@ function openOverlay(m) {
         ${m.content ? `<p style="white-space:pre-wrap;line-height:1.7">${escapeHtml(m.content)}</p>` : ''}
         ${m.description ? `<p class="text-muted mt-2">${escapeHtml(m.description)}</p>` : ''}
         ${m.taggedPersonName ? `<div class="post-tag mt-2">${m.taggedPersonName}</div>` : ''}
+        <div class="post-actions mt-2">
+            ${renderLikeButton(m)}
+        </div>
     `;
     loadOverlayComments(m.id);
     overlayEl.classList.add('open');

@@ -6,7 +6,7 @@ let uploadedContentType = null;
 let publishedMemoryId = null;
 let familyMembers = [];
 
-// Recorder condiviso per audio/video
+// Recorder / stream condiviso per audio/video/foto
 let mediaRecorder = null;
 let recordedChunks = [];
 let activeStream = null;
@@ -69,19 +69,20 @@ function showCaptureStep() {
     bar.innerHTML = '';
 
     if (contentType === 'audio') {
-        bar.appendChild(makeBtn(' Registra audio', 'primary', toggleAudioRecording, 'record-btn'));
+        bar.appendChild(makeBtn('Registra audio', 'primary', toggleAudioRecording, 'record-btn'));
         bar.appendChild(makeFileInput('audio/*', 'Carica un file audio'));
     } else if (contentType === 'video') {
         bar.appendChild(makeBtn('Registra video', 'primary', toggleVideoRecording, 'record-btn'));
-        bar.appendChild(makeFileInput('video/*', 'Carica un video', 'user'));
+        bar.appendChild(makeFileInput('video/*', 'Carica un video'));
     } else {
-        bar.appendChild(makeFileInput('image/*', 'Scatta una foto', 'environment', true));
+        bar.appendChild(makeBtn('Scatta una foto', 'primary', startPhotoCapture, 'photo-capture-btn'));
         bar.appendChild(makeFileInput('image/*', 'Carica una foto'));
     }
 
     // Suggerimenti Iris per tipo
     document.getElementById('iris-suggestions').innerHTML =
         '<ul>' + SUGGESTIONS[contentType].map(s => `<li>${s}</li>`).join('') + '</ul>';
+
 
     showStep('step-capture');
 }
@@ -96,16 +97,15 @@ function makeBtn(label, style, onClick, id) {
     return b;
 }
 
-function makeFileInput(accept, label, capture, isCameraBtn) {
+function makeFileInput(accept, label) {
     const wrap = document.createElement('label');
-    wrap.className = 'big-btn ' + (isCameraBtn ? 'primary' : 'outline');
+    wrap.className = 'big-btn outline';
     wrap.style.flex = '1';
     wrap.style.cursor = 'pointer';
     wrap.textContent = label;
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = accept;
-    if (capture) input.capture = capture;
     input.style.display = 'none';
     input.addEventListener('change', () => {
         if (input.files[0]) uploadFile(input.files[0]);
@@ -183,7 +183,81 @@ function resetRecordBtn() {
     if (!btn) return;
     btn.classList.remove('danger');
     btn.classList.add('primary');
-    btn.textContent = contentType === 'audio' ? ' Registra audio' : 'Registra video';
+    btn.textContent = contentType === 'audio' ? 'Registra audio' : 'Registra video';
+}
+
+/* ---- Scatto FOTO reale (anteprima webcam + cattura frame) ---- */
+async function startPhotoCapture() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert('Il tuo browser non supporta l\'accesso alla fotocamera. Usa "Carica una foto".');
+        return;
+    }
+    try {
+        // Su mobile prova la camera posteriore, altrimenti quella disponibile (webcam su desktop)
+        try {
+            activeStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        } catch {
+            activeStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        }
+    } catch (e) {
+        alert('Permesso fotocamera negato o non disponibile.');
+        return;
+    }
+
+    const preview = document.getElementById('capture-preview');
+    preview.innerHTML = '';
+    const liveVideo = document.createElement('video');
+    liveVideo.id = 'live-preview';
+    liveVideo.autoplay = true;
+    liveVideo.muted = true;
+    liveVideo.playsInline = true;
+    liveVideo.srcObject = activeStream;
+    liveVideo.style.maxWidth = '100%';
+    liveVideo.style.borderRadius = '12px';
+    preview.appendChild(liveVideo);
+
+    // Sostituisco la barra con "Scatta ora" / "Annulla"
+    const bar = document.getElementById('capture-bar');
+    bar.innerHTML = '';
+    bar.appendChild(makeBtn('Scatta ora', 'primary', capturePhotoFrame));
+    bar.appendChild(makeBtn('Annulla', 'outline', cancelPhotoCapture));
+}
+
+function capturePhotoFrame() {
+    const video = document.getElementById('live-preview');
+    if (!video || !video.videoWidth) return;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+
+    canvas.toBlob(async (blob) => {
+        stopActiveStream();
+        await uploadFile(new File([blob], 'foto.jpg', { type: 'image/jpeg' }));
+        resetPhotoBar();
+    }, 'image/jpeg', 0.92);
+}
+
+function cancelPhotoCapture() {
+    stopActiveStream();
+    document.getElementById('capture-preview').innerHTML = '';
+    resetPhotoBar();
+}
+
+function stopActiveStream() {
+    if (activeStream) {
+        activeStream.getTracks().forEach(t => t.stop());
+        activeStream = null;
+    }
+    document.getElementById('live-preview')?.remove();
+}
+
+function resetPhotoBar() {
+    const bar = document.getElementById('capture-bar');
+    bar.innerHTML = '';
+    bar.appendChild(makeBtn('Scatta una foto', 'primary', startPhotoCapture, 'photo-capture-btn'));
+    bar.appendChild(makeFileInput('image/*', 'Carica una foto'));
 }
 
 /* ---- Upload al server ---- */

@@ -9,7 +9,7 @@
 <body>
 <div id="navbar-slot"></div>
 
-<main class="container-narrow" style="max-width:680px">
+<main class="container-narrow" style="max-width:800px">
 
     <!-- STEP 1: scelta tipo -->
     <section id="step-type">
@@ -51,26 +51,33 @@
 
         <div class="media-preview-large" id="capture-preview"></div>
 
-        <div class="form-group mt-2">
-            <label for="c-title">Titolo del ricordo</label>
-            <input type="text" id="c-title" placeholder="es. La festa dei 60 anni di zio Franco" style="font-size:17px;padding:14px">
-        </div>
+        <div class="card content-form mt-2">
+            <h3 class="content-form-heading">Dettagli del ricordo</h3>
 
-        <div class="form-group">
-            <label for="c-person">Chi è il protagonista?</label>
-            <select id="c-person" style="font-size:17px;padding:14px"></select>
-        </div>
+            <div class="content-form-grid">
+                <div class="form-group">
+                    <label for="c-title">Titolo</label>
+                    <input type="text" id="c-title" placeholder="es. La festa dei 60 anni di zio Franco">
+                </div>
 
-        <div class="form-group">
-            <label for="c-description">Didascalia (facoltativa)</label>
-            <textarea id="c-description" placeholder="Aggiungi qualche dettaglio…" style="font-size:16px"></textarea>
+                <div class="form-group">
+                    <label for="c-person">Protagonista</label>
+                    <select id="c-person"></select>
+
+                </div>
+            </div>
+
+            <div class="form-group mb-0">
+                <label for="c-description">Didascalia <span class="label-optional">(facoltativa)</span></label>
+                <textarea id="c-description" placeholder="Aggiungi qualche dettaglio…"></textarea>
+            </div>
         </div>
 
         <!-- Banner Iris consiglia -->
         <div class="iris-banner">
             <div class="iris-avatar-sm">
-                <img src="img/site/gufo.png" alt="Avatar Gufo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
             </div>
+
             <div>
                 <h3>Iris consiglia</h3>
                 <div id="iris-suggestions"></div>
@@ -112,15 +119,19 @@
                 <p class="text-muted" style="font-size:13px;margin:0">Descriviamo insieme il tuo contenuto</p>
             </div>
         </div>
-    </section>
-        <div class="chat-messages" id="describe-messages" style="max-height:0px;min-height:0px;overflow-y:auto"></div>
 
+        <div class="chat-messages" id="describe-messages" style="max-height:400px;min-height:200px;overflow-y:auto"></div>
+
+        <div class="chat-input">
+            <input type="text" id="describe-input" placeholder="Scrivi la tua risposta…">
+            <button class="btn btn-primary" id="describe-send-btn">Invia</button>
+        </div>
     </section>
 
     <!-- STEP 5: pubblicato! -->
     <section id="step-done" class="hidden text-center">
 
-            <img src="img/site/gufo.png" alt="Avatar Gufo" style="width: 40%; height: 40%; object-fit: cover; border-radius: 50%;">
+        <img src="img/site/gufo.png" alt="Avatar Gufo" style="width: 40%; height: 40%; object-fit: cover; border-radius: 50%;">
 
         <h1>Contenuto pubblicato!</h1>
         <p class="text-muted mb-2">Il tuo ricordo ora fa parte della storia della tua famiglia.</p>

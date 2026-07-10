@@ -5,6 +5,7 @@ import com.memorybridge.model.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+
 //Database simulato in memoria, Singleton thread-safe. I dati vengono persi al riavvio del server
 public class DataStore {
 
@@ -127,6 +128,50 @@ public class DataStore {
                 .filter(c -> memoryId.equals(c.getMemoryId()))
                 .sorted(Comparator.comparing(Comment::getCreatedAt))
                 .toList();
+    }
+
+    // ==================== LIKES ====================
+    // memoryId -> (userId -> Like). La mappa interna per userId garantisce che un
+    // utente non possa mettere like due volte allo stesso ricordo, e rende il
+    // toggle/lookup O(1) senza dover scorrere una lista.
+    private final Map<Long, Map<Long, Like>> likesByMemory = new ConcurrentHashMap<>();
+    private final AtomicLong likeSeq = new AtomicLong(0);
+
+    /**
+     * Alterna il like di un utente su un ricordo: se non l'aveva ancora messo lo
+     * aggiunge, se ce l'aveva lo toglie (comportamento "toggle" tipico dei social).
+     *
+     * @return true se dopo la chiamata il ricordo risulta "piaciuto" da quell'utente,
+     *         false se il like è appena stato rimosso.
+     */
+    public boolean toggleLike(Long memoryId, Long userId) {
+        if (memoryId == null || userId == null) return false;
+        Map<Long, Like> forMemory = likesByMemory.computeIfAbsent(memoryId, k -> new ConcurrentHashMap<>());
+        if (forMemory.remove(userId) != null) {
+            return false; // era già piaciuto, ora tolto
+        }
+        Like like = new Like(memoryId, userId);
+        like.setId(likeSeq.incrementAndGet());
+        forMemory.put(userId, like);
+        return true; // ora piaciuto
+    }
+
+    public int likeCount(Long memoryId) {
+        if (memoryId == null) return 0;
+        Map<Long, Like> forMemory = likesByMemory.get(memoryId);
+        return forMemory == null ? 0 : forMemory.size();
+    }
+
+    public boolean hasLiked(Long memoryId, Long userId) {
+        if (memoryId == null || userId == null) return false;
+        Map<Long, Like> forMemory = likesByMemory.get(memoryId);
+        return forMemory != null && forMemory.containsKey(userId);
+    }
+
+    /** Utile per un futuro "chi ha messo like a questo ricordo". */
+    public List<Like> likersOf(Long memoryId) {
+        Map<Long, Like> forMemory = likesByMemory.get(memoryId);
+        return forMemory == null ? List.of() : new ArrayList<>(forMemory.values());
     }
 
     // ==================== INVITES ====================

@@ -12,7 +12,8 @@ function renderNavbar(activeSection) {
     slot.innerHTML = `
         <nav class="navbar">
             <a href="home.html" class="logo">
-                <img src="img/site/title.png" alt="Memory Bridge" height="70" width="170">
+                <img src="img/site/logo.png" alt="Memory Bridge" height="80" width="80">
+                <img src="img/site/title.png" alt="Memory Bridge" height="65" width="170">
             </a>
             <div class="nav-links">
                 <a href="home.html" class="${activeSection === 'home' ? 'active' : ''}">Home</a>

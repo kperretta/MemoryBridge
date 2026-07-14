@@ -144,6 +144,14 @@ function sendUserMessage() {
     if (!text) return;
     appendMessage('user', text);
     userInput.value = '';
+
+    // Se l'utente scrive senza aver scelto un tema dai pulsanti, procediamo
+    // comunque con un tema "libero" invece di ri-mostrare il benvenuto.
+    if (!currentTheme) {
+        currentTheme = 'free';
+        if (currentStep === 0) currentStep = 1;
+    }
+
     setTimeout(irisNextTurn, 500);
 }
 
@@ -217,6 +225,12 @@ async function handleRecordedAudio() {
         const { id } = await r.json();
         recordedAudioIds.push(id);
         appendMessage('user', null, id, 'audio');
+
+        if (!currentTheme) {
+            currentTheme = 'free';
+            if (currentStep === 0) currentStep = 1;
+        }
+
         setTimeout(irisNextTurn, 500);
     } catch (err) {
         alert('Errore upload audio: ' + err.message);

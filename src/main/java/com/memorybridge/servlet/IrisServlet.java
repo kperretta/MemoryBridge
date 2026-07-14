@@ -21,8 +21,8 @@ public class IrisServlet extends HttpServlet {
         THEMES.put("place",     "Un luogo importante");
         THEMES.put("tradition", "Una tradizione o ricetta");
         THEMES.put("object",    "Un oggetto con una storia");
+        THEMES.put("free",      "Racconto libero");
     }
-
     private static final int MAX_QUESTIONS_PER_THEME = 4;
 
     private static final String CLOSING = "Grazie per aver condiviso questo ricordo. " +

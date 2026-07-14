@@ -9,9 +9,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b36b1a15-c51e-4c3f-8a8d-6a46c344b8bf" name="Changes" comment="fix(iris): aggiutno Groq+ risolto blocco elaborazione racconto Groq + rinforzo anti-invenzione">
+    <list default="true" id="b36b1a15-c51e-4c3f-8a8d-6a46c344b8bf" name="Changes" comment="fix(iris): aggiunta elaborazione del testo anche con allegato audio">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/memorybridge/util/GroqApiClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/memorybridge/util/GroqApiClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/memorybridge/servlet/IrisServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/memorybridge/servlet/IrisServlet.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/webapp/js/chat.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/js/chat.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -222,7 +222,8 @@
       <workItem from="1784041080259" duration="171000" />
       <workItem from="1784058365749" duration="10000" />
       <workItem from="1784061223081" duration="3174000" />
-      <workItem from="1784064415441" duration="579000" />
+      <workItem from="1784064415441" duration="694000" />
+      <workItem from="1784065128690" duration="343000" />
     </task>
     <task id="LOCAL-00001" summary=" Implementazione iniziale Memory Bridge">
       <option name="closed" value="true" />
@@ -328,7 +329,15 @@
       <option name="project" value="LOCAL" />
       <updated>1784064402438</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="fix(iris): aggiunta elaborazione del testo anche con allegato audio">
+      <option name="closed" value="true" />
+      <created>1784065100008</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1784065100008</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -343,6 +352,7 @@
     <MESSAGE value="Aggiornamento css, aggiunta like e modifiche e risoluzione errore aggiunta foto" />
     <MESSAGE value="Aggiornamento" />
     <MESSAGE value="fix(iris): aggiutno Groq+ risolto blocco elaborazione racconto Groq + rinforzo anti-invenzione" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix(iris): aggiutno Groq+ risolto blocco elaborazione racconto Groq + rinforzo anti-invenzione" />
+    <MESSAGE value="fix(iris): aggiunta elaborazione del testo anche con allegato audio" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix(iris): aggiunta elaborazione del testo anche con allegato audio" />
   </component>
 </project>

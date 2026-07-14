@@ -95,7 +95,7 @@ function hideTyping() { document.getElementById('typing-indicator')?.remove(); }
 async function irisNextTurn() {
     showTyping();
     try {
-        const historyParam = encodeURIComponent(JSON.stringify(conversation));
+        const historyParam = encodeURIComponent(JSON.stringify(buildHistoryForApi()));
         const base = currentTheme
             ? `/api/iris?step=${currentStep}&theme=${currentTheme}`
             : `/api/iris?step=${currentStep}`;
@@ -243,7 +243,7 @@ document.getElementById('end-btn').addEventListener('click', async () => {
     let finalText = '(solo audio)';
     if (userMessages) {
         try {
-            const result = await api.post('/api/iris', { action: 'elaborate', history: conversation });
+            const result = await api.post('/api/iris', { action: 'elaborate', history: buildHistoryForApi() });
             if (!result.elaborated || !result.elaborated.trim()) {
                 throw new Error('Risposta vuota da Iris');
             }
@@ -315,4 +315,15 @@ function showPostSaveChoice() {
     document.body.appendChild(backdrop);
     document.getElementById('another-memory-btn').onclick = () => window.location.reload();
     document.getElementById('go-home-btn').onclick = () => window.location.href = 'home.html';
+}
+/* Prepara la history per l'invio al backend: i turni audio senza
+   trascrizione testuale vengono sostituiti con un placeholder, cosi'
+   Groq non riceve mai un messaggio con contenuto vuoto. */
+function buildHistoryForApi() {
+    return conversation.map(m => ({
+        role: m.role,
+        text: (m.mediaId && !m.text)
+            ? '[ha condiviso un ricordo tramite un messaggio audio, senza descriverlo a parole]'
+            : m.text
+    }));
 }

@@ -60,6 +60,8 @@ public class GroqApiClient {
         return nextIrisMessage(systemPrompt, history, 300);
     }
 
+
+
     /**
      * Come sopra, ma con un limite di token personalizzabile — utile per
      * compiti che richiedono output più lunghi (es. l'elaborazione di un
@@ -71,12 +73,17 @@ public class GroqApiClient {
                     "Chiave Groq non configurata: imposta GROQ_API_KEY o valorizza FALLBACK_API_KEY.");
         }
 
+
         // Formato OpenAI-compatibile: messages = [{role, content}, ...]
         List<Map<String, String>> messages = new ArrayList<>();
         messages.add(Map.of("role", "system", "content", systemPrompt));
         for (Map<String, String> m : history) {
             String role = "user".equals(m.get("role")) ? "user" : "assistant";
-            messages.add(Map.of("role", role, "content", m.get("text")));
+            String text = m.get("text");
+            if (text == null || text.isBlank()) {
+                text = "[messaggio audio, nessuna trascrizione testuale disponibile]";
+            }
+            messages.add(Map.of("role", role, "content", text));
         }
 
         Map<String, Object> payload = Map.of(
@@ -113,5 +120,8 @@ public class GroqApiClient {
         } catch (Exception e) {
             throw new RuntimeException("Chiamata a Groq fallita: " + e.getMessage(), e);
         }
+
     }
+
+
 }

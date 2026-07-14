@@ -4,30 +4,16 @@ import com.memorybridge.data.DataStore;
 import com.memorybridge.model.FamilyMember;
 import com.memorybridge.model.Memory;
 import com.memorybridge.util.JsonUtil;
+import com.memorybridge.util.GroqApiClient;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 
 import java.io.IOException;
 import java.util.*;
 
-/**
- * Iris strutturata per temi. Il flusso e':
- *
- *   step=0 (nessun tema)     -> messaggio di benvenuto + lista temi selezionabili
- *   step=1, theme=X          -> prima domanda del tema X
- *   step=2, theme=X          -> seconda domanda del tema X
- *   ...
- *   step=N (fine tema)       -> messaggio di chiusura
- *
- * Il frontend mostra i temi come pulsanti quick-reply.
- * NB: non e' un vero LLM. Le domande sono pre-scritte per tema; in una
- * versione produttiva si integrerebbe un modello linguistico che genera
- * domande contestuali basate sulla risposta dell'utente.
- */
 @WebServlet("/api/iris")
 public class IrisServlet extends HttpServlet {
 
-    // Temi disponibili con label leggibile
     private static final Map<String, String> THEMES = new LinkedHashMap<>();
     static {
         THEMES.put("person",    "Una persona di famiglia");
@@ -37,44 +23,7 @@ public class IrisServlet extends HttpServlet {
         THEMES.put("object",    "Un oggetto con una storia");
     }
 
-    // Domande specifiche per ciascun tema
-    private static final Map<String, List<String>> QUESTIONS = new HashMap<>();
-    static {
-        QUESTIONS.put("person", List.of(
-                "Iniziamo dalle basi: come si chiamava questa persona e che rapporto avevi con lei?",
-                "C'era un modo di dire, un gesto o un'abitudine che la rendeva unica?",
-                "Che aspetto aveva? Ricordi qualche dettaglio del suo modo di essere?",
-                "Qual e' il ricordo piu' vivido che hai di lei, quello che ti torna in mente per primo?"
-        ));
-
-        QUESTIONS.put("event", List.of(
-                "Ti ricordi in che periodo e' successo? Anche solo l'anno o la stagione va bene.",
-                "Chi c'era con te in quel momento?",
-                "Cosa hai provato? Che emozione ti e' rimasta addosso?",
-                "C'e' un dettaglio particolare che ti e' rimasto impresso? Un suono, un profumo, una frase?"
-        ));
-
-        QUESTIONS.put("place", List.of(
-                "Che luogo era e dove si trovava?",
-                "Come ci si arrivava? Ricordi il viaggio, il percorso?",
-                "Quali profumi, suoni o colori lo caratterizzavano?",
-                "Con chi lo hai frequentato di piu' e perche' era importante per te?"
-        ));
-
-        QUESTIONS.put("tradition", List.of(
-                "Come si chiamava questa tradizione, o ricetta? E chi te l'ha tramandata?",
-                "In quali occasioni la celebravate o la preparavate?",
-                "C'e' un ingrediente, un gesto o un dettaglio segreto che vuoi tramandare?",
-                "Perche' questa tradizione conta per te? Che significato ha per la famiglia?"
-        ));
-
-        QUESTIONS.put("object", List.of(
-                "Che oggetto e', e a chi apparteneva originariamente?",
-                "Come e' arrivato nelle tue mani?",
-                "Che valore ha per te oggi?",
-                "C'e' una storia o un momento preciso legato a questo oggetto?"
-        ));
-    }
+    private static final int MAX_QUESTIONS_PER_THEME = 4;
 
     private static final String CLOSING = "Grazie per aver condiviso questo ricordo. " +
             "Quando vuoi, premi 'Fine' per salvarlo e renderlo parte della memoria della tua famiglia.";
@@ -91,7 +40,6 @@ public class IrisServlet extends HttpServlet {
             return;
         }
 
-        // --- Modalita' "personalita'": genera un profilo caratteriale del membro ---
         String personalityParam = req.getParameter("personality");
         if (personalityParam != null) {
             handlePersonality(Long.parseLong(personalityParam), resp);
@@ -106,13 +54,11 @@ public class IrisServlet extends HttpServlet {
 
         Map<String, Object> response = new LinkedHashMap<>();
 
-        // --- STEP 0: benvenuto + scelta tema ---
-        if (step == 0 || theme == null || !QUESTIONS.containsKey(theme)) {
+        if (step == 0 || theme == null || !THEMES.containsKey(theme)) {
             response.put("messages", List.of(
                     "Ciao, sono Iris! Sono qui per aiutarti a raccogliere un ricordo speciale.",
                     "Di cosa vorresti parlarmi oggi? Scegli pure dalle opzioni qui sotto."
             ));
-            // themes -> lista di {id, label}
             List<Map<String, String>> themes = new ArrayList<>();
             THEMES.forEach((id, label) -> themes.add(Map.of("id", id, "label", label)));
             response.put("themes", themes);
@@ -122,32 +68,122 @@ public class IrisServlet extends HttpServlet {
             return;
         }
 
-        // --- STEP N: domanda del tema ---
-        List<String> questions = QUESTIONS.get(theme);
         int qIndex = step - 1;
 
-        if (qIndex < questions.size()) {
-            response.put("messages", List.of(questions.get(qIndex)));
-            response.put("hasMore", qIndex < questions.size() - 1);
-            response.put("nextStep", step + 1);
-            response.put("theme", theme);
-        } else {
-            // Fine delle domande per il tema
+        if (qIndex >= MAX_QUESTIONS_PER_THEME) {
             response.put("messages", List.of(CLOSING));
             response.put("hasMore", false);
             response.put("nextStep", step);
             response.put("theme", theme);
+            resp.getWriter().write(JsonUtil.GSON.toJson(response));
+            return;
         }
 
-        resp.getWriter().write(JsonUtil.GSON.toJson(response));
+        try {
+            String question = generateQuestion(theme, req);
+            response.put("messages", List.of(question));
+            response.put("hasMore", qIndex < MAX_QUESTIONS_PER_THEME - 1);
+            response.put("nextStep", step + 1);
+            response.put("theme", theme);
+            resp.getWriter().write(JsonUtil.GSON.toJson(response));
+        } catch (Exception e) {
+            System.err.println("[IrisServlet] " + "Iris: chiamata a Groq fallita: " + e.getMessage());
+            e.printStackTrace();
+            resp.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+            resp.getWriter().write("{\"error\":\"Iris non e' raggiungibile in questo momento. Riprova tra poco.\"}");
+        }
     }
 
-    /**
-     * Genera un profilo "personalita'" del membro basato sui dati disponibili:
-     * epoca di nascita, luogo, descrizione, quantita' e temi dei ricordi collegati.
-     * E' una generazione template-based (non LLM): in produzione Iris userebbe
-     * un modello linguistico alimentato dai ricordi reali.
-     */
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+
+        HttpSession session = req.getSession(false);
+        if (session == null || session.getAttribute("userId") == null) {
+            resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            resp.getWriter().write("{\"error\":\"Non autenticato\"}");
+            return;
+        }
+
+        Map<String, Object> body = JsonUtil.GSON.fromJson(req.getReader(), Map.class);
+        String action = (String) body.get("action");
+
+        if ("elaborate".equals(action)) {
+            handleElaborate(body, resp);
+            return;
+        }
+
+        resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        resp.getWriter().write("{\"error\":\"Azione non riconosciuta\"}");
+    }
+
+    @SuppressWarnings("unchecked")
+    private String generateQuestion(String theme, HttpServletRequest req) {
+        String historyParam = req.getParameter("history");
+        List<Map<String, String>> history = (historyParam == null || historyParam.isBlank())
+                ? List.of()
+                : JsonUtil.GSON.fromJson(historyParam, List.class);
+
+        String systemPrompt = "Sei Iris, un'assistente calda ed empatica che aiuta le persone a " +
+                "raccontare ricordi di famiglia. Il tema scelto e': " + THEMES.get(theme) + ". " +
+                "Se non c'e' ancora nessuna risposta dell'utente, fai una domanda aperta e " +
+                "coinvolgente per iniziare a raccontare su questo tema. Se invece l'utente ha gia' " +
+                "risposto a una o piu' domande, fai UNA domanda di approfondimento breve che si " +
+                "colleghi in modo naturale a quello che ha appena raccontato, invece di seguire una " +
+                "scaletta fissa. Fai sempre e solo UNA domanda alla volta (massimo 2 frasi), sii " +
+                "calorosa, empatica e concisa. Rispondi SOLO con la domanda, senza premesse ne' saluti.";
+
+        return GroqApiClient.nextIrisMessage(systemPrompt, history);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void handleElaborate(Map<String, Object> body, HttpServletResponse resp) throws IOException {
+        Object historyObj = body.get("history");
+        if (!(historyObj instanceof List) || ((List<?>) historyObj).isEmpty()) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("{\"error\":\"history mancante o vuota\"}");
+            return;
+        }
+        List<Map<String, String>> history = (List<Map<String, String>>) historyObj;
+
+
+        List<Map<String, String>> historyForElaboration = new ArrayList<>(history);
+        historyForElaboration.add(Map.of(
+                "role", "user",
+                "text", "Ora riformula in un racconto scorrevole in prima persona SOLO quello che ho scritto " +
+                        "sopra, senza aggiungere nulla che io non abbia detto. Se manca un dettaglio, lascialo " +
+                        "fuori, non inventarlo."
+        ));
+
+        try {
+            String systemPrompt = "Sei un editor che riformula in prima persona una conversazione fatta di domande " +
+                    "e risposte, trasformandola in un testo scorrevole, come se la persona stesse raccontando il " +
+                    "ricordo di getto a voce. REGOLE FERREE: " +
+                    "1) Usa ESCLUSIVAMENTE le informazioni presenti nelle risposte dell'utente. " +
+                    "2) NON aggiungere nomi, luoghi, date, dettagli sensoriali, emozioni o eventi che l'utente non ha " +
+                    "menzionato esplicitamente. " +
+                    "3) Se un dettaglio non c'e', semplicemente non scriverlo: non riempire i vuoti con invenzioni. " +
+                    "4) Non includere le domande fatte da Iris, solo il racconto risultante. " +
+                    "5) Il tuo compito e' RIFORMULARE, non ARRICCHIRE: cambia la forma (da domanda-risposta a racconto " +
+                    "scorrevole), non il contenuto. " +
+                    "Scrivi un unico testo coeso, in un tono caldo ma aderente a ciò che e' stato detto, con una " +
+                    "lunghezza simile a quella delle risposte fornite complessivamente.";
+
+            String elaborated = GroqApiClient.nextIrisMessage(systemPrompt, historyForElaboration, 1000);
+            System.err.println("[IrisServlet] " + "Iris: racconto elaborato da Groq con successo.");
+
+            Map<String, Object> out = new LinkedHashMap<>();
+            out.put("elaborated", elaborated);
+            resp.getWriter().write(JsonUtil.GSON.toJson(out));
+        } catch (Exception e) {
+            System.err.println("[IrisServlet] " + "Iris: elaborazione fallita: " + e.getMessage());
+            e.printStackTrace();
+            resp.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+            resp.getWriter().write("{\"error\":\"Non e' stato possibile elaborare il racconto. Riprova tra poco.\"}");
+        }
+    }
+
     private void handlePersonality(Long memberId, HttpServletResponse resp) throws IOException {
         FamilyMember m = DataStore.get().findFamilyMember(memberId);
         if (m == null) {
@@ -159,7 +195,6 @@ public class IrisServlet extends HttpServlet {
         List<Memory> memories = DataStore.get().memoriesByPerson(memberId);
         StringBuilder sb = new StringBuilder();
 
-        // Epoca
         if (m.getBirthDate() != null && m.getBirthDate().length() >= 4) {
             int year = Integer.parseInt(m.getBirthDate().substring(0, 4));
             if (year < 1940) sb.append(m.getFirstName())
@@ -169,31 +204,28 @@ public class IrisServlet extends HttpServlet {
             else if (year < 1990) sb.append(m.getFirstName())
                     .append(" appartiene alla generazione ponte tra il mondo analogico e quello digitale. ");
             else sb.append(m.getFirstName())
-                    .append(" e' nativo/a digitale, cresciuto/a in un mondo connesso. ");
+                        .append(" e' nativo/a digitale, cresciuto/a in un mondo connesso. ");
         }
 
-        // Luogo
         if (m.getBirthPlace() != null && !m.getBirthPlace().isBlank()) {
             sb.append("Le sue radici affondano a ").append(m.getBirthPlace()).append(". ");
         }
 
-        // Descrizione
         if (m.getDescription() != null && !m.getDescription().isBlank()) {
             sb.append(m.getDescription()).append(" ");
         }
 
-        // Ricordi
         if (memories.isEmpty()) {
             sb.append("Non ci sono ancora ricordi collegati: ogni contributo della famiglia ")
-              .append("aiutera' a ricostruire il suo ritratto.");
+                    .append("aiutera' a ricostruire il suo ritratto.");
         } else if (memories.size() == 1) {
             sb.append("C'e' un ricordo custodito che parla di lui/lei: \"")
-              .append(memories.get(0).getTitle()).append("\".");
+                    .append(memories.get(0).getTitle()).append("\".");
         } else {
             sb.append("La famiglia custodisce ").append(memories.size())
-              .append(" ricordi che lo/la riguardano, tra cui \"")
-              .append(memories.get(0).getTitle()).append("\". ")
-              .append("Ogni racconto aggiunge un tassello alla sua storia.");
+                    .append(" ricordi che lo/la riguardano, tra cui \"")
+                    .append(memories.get(0).getTitle()).append("\". ")
+                    .append("Ogni racconto aggiunge un tassello alla sua storia.");
         }
 
         Map<String, Object> out = new LinkedHashMap<>();

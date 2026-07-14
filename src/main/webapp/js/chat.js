@@ -95,16 +95,17 @@ function hideTyping() { document.getElementById('typing-indicator')?.remove(); }
 async function irisNextTurn() {
     showTyping();
     try {
-        const url = currentTheme
+        const historyParam = encodeURIComponent(JSON.stringify(conversation));
+        const base = currentTheme
             ? `/api/iris?step=${currentStep}&theme=${currentTheme}`
             : `/api/iris?step=${currentStep}`;
+        const url = `${base}&history=${historyParam}`;
         const r = await api.get(url);
         setTimeout(() => {
             hideTyping();
             r.messages.forEach((msg, i) => {
                 setTimeout(() => appendMessage('iris', msg), i * 700);
             });
-            // Se sono arrivati anche i temi, li mostro come pulsanti (delay per apparire dopo i messaggi)
             if (r.themes && r.themes.length > 0) {
                 setTimeout(() => appendThemeButtons(r.themes), r.messages.length * 700 + 200);
             }
@@ -113,7 +114,24 @@ async function irisNextTurn() {
     } catch (e) {
         hideTyping();
         console.error(e);
+        appendIrisError('Mi dispiace, non riesco a risponderti in questo momento.', () => irisNextTurn());
     }
+}
+
+/* Mostra un messaggio di errore di Iris con un pulsante "Riprova" */
+function appendIrisError(text, onRetry) {
+    const div = document.createElement('div');
+    div.className = 'msg msg-iris';
+    div.textContent = text;
+    const retryBtn = document.createElement('button');
+    retryBtn.className = 'btn btn-secondary';
+    retryBtn.textContent = 'Riprova';
+    retryBtn.style.marginTop = '8px';
+    retryBtn.style.display = 'block';
+    retryBtn.onclick = () => { div.remove(); onRetry(); };
+    div.appendChild(retryBtn);
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
 }
 
 /* ============== TESTO ============== */
@@ -191,7 +209,7 @@ async function handleRecordedAudio() {
     recordedChunks = [];
     const formData = new FormData();
     const ext = recordingMimeType.includes('mp4') ? 'm4a'
-              : recordingMimeType.includes('ogg') ? 'ogg' : 'webm';
+        : recordingMimeType.includes('ogg') ? 'ogg' : 'webm';
     formData.append('file', blob, `recording.${ext}`);
     try {
         const r = await fetch('api/media', { method: 'POST', credentials: 'include', body: formData });
@@ -206,7 +224,7 @@ async function handleRecordedAudio() {
 }
 
 /* ============== FINE ============== */
-document.getElementById('end-btn').addEventListener('click', () => {
+document.getElementById('end-btn').addEventListener('click', async () => {
     const userMessages = conversation
         .filter(m => m.role === 'user')
         .map(m => (m.mediaId && !m.text) ? '[messaggio audio]' : m.text)
@@ -216,7 +234,27 @@ document.getElementById('end-btn').addEventListener('click', () => {
         alert('Non hai ancora raccontato nulla!');
         return;
     }
-    document.getElementById('preview-content').textContent = userMessages || '(solo audio)';
+
+    document.getElementById('preview-content').textContent = userMessages
+        ? 'Iris sta elaborando il tuo racconto…'
+        : '(solo audio)';
+    document.getElementById('preview-modal').classList.remove('hidden');
+
+    let finalText = '(solo audio)';
+    if (userMessages) {
+        try {
+            const result = await api.post('/api/iris', { action: 'elaborate', history: conversation });
+            if (!result.elaborated || !result.elaborated.trim()) {
+                throw new Error('Risposta vuota da Iris');
+            }
+            finalText = result.elaborated;
+        } catch (e) {
+            closePreview();
+            alert('Non è stato possibile elaborare il racconto in questo momento. Riprova tra poco premendo di nuovo "Fine".');
+            return;
+        }
+    }
+    document.getElementById('preview-content').textContent = finalText;
 
     const old = document.getElementById('preview-audio');
     if (old) old.remove();
@@ -230,7 +268,6 @@ document.getElementById('end-btn').addEventListener('click', () => {
         audio.style.width = '100%';
         document.getElementById('preview-content').after(audio);
     }
-    document.getElementById('preview-modal').classList.remove('hidden');
 });
 
 function closePreview() { document.getElementById('preview-modal').classList.add('hidden'); }

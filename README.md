@@ -2,7 +2,6 @@
 
 Piattaforma per preservare e valorizzare la memoria familiare.
 Corso di Interazione Uomo-Macchina — A.A. 2025/2026
-**Katia Perretta**
 
 ## Stack
 
@@ -59,44 +58,7 @@ src/main/
 Tutti gli endpoint richiedono sessione autenticata (cookie).
 Il body è sempre JSON, la risposta è sempre JSON.
 
-| Metodo | URL | Descrizione |
-|--------|-----|-------------|
-| POST | `/api/login` | `{email, password}` → utente |
-| POST | `/api/register` | `{firstName, lastName, email, password, inviteCode?, familyCode?}` |
-| GET | `/api/me` | Utente corrente |
-| POST | `/api/me` | Logout (distrugge sessione) |
-| GET | `/api/memories` | Feed della famiglia |
-| GET | `/api/memories?personId=X` | Ricordi legati a un familiare |
-| GET | `/api/memories?id=X` | Singolo ricordo |
-| POST | `/api/memories` | Crea ricordo |
-| GET | `/api/tree` | Tutto l'albero |
-| GET | `/api/tree?id=X` | Singolo membro |
-| POST | `/api/tree` | Nuovo membro |
-| PUT | `/api/tree` | Modifica membro |
-| GET | `/api/comments?memoryId=X` | Commenti del ricordo |
-| POST | `/api/comments` | Nuovo commento `{memoryId, text}` |
-| POST | `/api/invite` | Genera codice invito |
-| GET | `/api/iris?step=N` | Prossime domande di Iris |
-
 ## Divisione del lavoro
-
-### Setup insieme (Giorno 1)
-- Aprire il progetto in IntelliJ e verificare che parta
-- Rileggere i model e il DataStore per capire il flusso dei dati
-- Concordare stile CSS finale e palette da Figma
-
-### Katia — Design
-- Rifinire `style.css` per matchare il Figma
-- Migliorare la mascotte Iris (immagine reale al posto dell'emoji 🦉 in `chat.html`)
-- Completare `chat.js` (T1) e `home.js` (T5)
-- Curare il file `invite.html` (T6)
-- Preparare il PowerPoint finale
-
-### Stefano — Manager/Valutazione
-- Rifinire `tree.js` (T3) e `profile.js` (T4)
-- Completare `upload.js` (T2)
-- Coordinare test di usabilità (10+ utenti)
-- Redigere la relazione sui miglioramenti + la relazione test
 
 ## Miglioramenti dall'Assignment 3 già implementati
 
@@ -110,12 +72,3 @@ Da rifinire ancora:
 - **#1**: sposta l'invito nell'albero (già iniziato: menu contestuale su nodo)
 - **#3**: integrare selezione familiare inline nel form invito
 - **#4**: cursor pointer sui nodi (già presente)
-
-## Deliverables Assignment 4
-
-1. Link a questo repo Github
-2. Relazione sui miglioramenti apportati (verrà scritta da Stefano)
-3. Questionari Excel di 10+ utenti (stesso template Assignment 1)
-4. Relazione sul testing di usabilità
-5. Presentazione PowerPoint
-6. Tutto in un file `.zip`

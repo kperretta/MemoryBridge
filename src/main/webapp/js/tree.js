@@ -34,15 +34,14 @@ function renderTree(members, highlightId) {
         return;
     }
     container.style.position = 'relative';
-    const generations = computeGenerations(members);
+    const generations = computeOrderedGenerations(members);
     generations.forEach(gen => {
         const genDiv = document.createElement('div');
         genDiv.className = 'generation';
-        const ordered = orderGeneration(gen);
         const placed = new Set();
-        ordered.forEach(m => {
+        gen.forEach(m => {
             if (placed.has(m.id)) return;
-            const spouse = m.spouseId ? ordered.find(x => x.id === m.spouseId) : null;
+            const spouse = m.spouseId ? gen.find(x => x.id === m.spouseId) : null;
             if (spouse && !placed.has(spouse.id)) {
                 const coupleDiv = document.createElement('div');
                 coupleDiv.className = 'couple';
@@ -63,12 +62,19 @@ function renderTree(members, highlightId) {
 }
 
 /**
- * Calcola la generazione (livello) di ogni membro seguendo il grafo di
- * parentela (madre/padre => livello-1, figlio => livello+1, coniuge => stesso
- * livello), invece di basarsi sulla data di nascita. Gestisce più "rami"
- * familiari scollegati tra loro.
+ * Calcola generazioni (righe) E ordine orizzontale in un unico passaggio
+ * top-down:
+ *  1. Il livello (riga) di ogni persona è dato dal grafo di parentela
+ *     (madre/padre => livello-1, figlio => livello+1, coniuge => stesso
+ *     livello), non dalla data di nascita.
+ *  2. La posizione orizzontale di un figlio è ereditata dai suoi genitori
+ *     (media delle loro posizioni), così un figlio di chi sta a sinistra
+ *     nella riga sopra finisce a sinistra anche nella riga sotto. Chi entra
+ *     in famiglia per matrimonio eredita invece la posizione del coniuge.
+ * Il risultato è un array di generazioni, ciascuna già ordinata da sinistra
+ * a destra in modo coerente con la riga precedente.
  */
-function computeGenerations(members) {
+function computeOrderedGenerations(members) {
     const byId = new Map(members.map(m => [m.id, m]));
     const level = new Map();
 
@@ -108,36 +114,86 @@ function computeGenerations(members) {
         if (!generations[idx]) generations[idx] = [];
         generations[idx].push(m);
     });
-    return generations.filter(Boolean);
-}
+    const genArrays = generations.filter(Boolean);
 
-/**
- * Ordina i membri di una generazione in modo che fratelli (stessi genitori)
- * e coniugi restino visivamente adiacenti.
- */
-function orderGeneration(gen) {
-    const arr = [...gen];
-    arr.sort((a, b) => {
-        const ka = (a.motherId || 0) + '-' + (a.fatherId || 0);
-        const kb = (b.motherId || 0) + '-' + (b.fatherId || 0);
-        if (ka !== kb) return ka.localeCompare(kb);
-        return (a.birthDate || '').localeCompare(b.birthDate || '');
-    });
-    const result = [];
-    const placed = new Set();
-    arr.forEach(m => {
-        if (placed.has(m.id)) return;
-        result.push(m);
-        placed.add(m.id);
-        if (m.spouseId && !placed.has(m.spouseId)) {
-            const spouse = arr.find(x => x.id === m.spouseId);
-            if (spouse) {
-                result.push(spouse);
-                placed.add(spouse.id);
+    // Posizione orizzontale definitiva di ciascuna persona, riempita
+    // generazione per generazione partendo dall'alto.
+    const position = new Map();
+
+    function pairSpousesArbitrarily(gen) {
+        // Usato solo per la generazione più in alto, dove non c'è un
+        // genitore da cui ereditare la posizione: ordino comunque tenendo
+        // i coniugi vicini, in modo stabile.
+        const arr = [...gen].sort((a, b) => (a.birthDate || '').localeCompare(b.birthDate || ''));
+        const result = [];
+        const placed = new Set();
+        arr.forEach(m => {
+            if (placed.has(m.id)) return;
+            result.push(m);
+            placed.add(m.id);
+            if (m.spouseId && !placed.has(m.spouseId)) {
+                const spouse = arr.find(x => x.id === m.spouseId);
+                if (spouse) { result.push(spouse); placed.add(spouse.id); }
             }
+        });
+        return result;
+    }
+
+    genArrays.forEach((gen, genIdx) => {
+        const base = genIdx === 0 ? pairSpousesArbitrarily(gen) : gen;
+        const provisional = new Map();
+
+        // Risolvo iterativamente: prima chi ha genitori già posizionati,
+        // poi chi eredita la posizione del coniuge, finché non c'è più
+        // nulla da risolvere.
+        let pending = [...base];
+        let changed = true;
+        while (changed && pending.length) {
+            changed = false;
+            pending = pending.filter(m => {
+                const parentPositions = [m.motherId, m.fatherId]
+                    .filter(Boolean)
+                    .map(id => position.get(id))
+                    .filter(p => p !== undefined);
+                if (parentPositions.length) {
+                    provisional.set(m.id, parentPositions.reduce((a, b) => a + b, 0) / parentPositions.length);
+                    changed = true;
+                    return false;
+                }
+                if (m.spouseId && provisional.has(m.spouseId)) {
+                    provisional.set(m.id, provisional.get(m.spouseId) + 0.5);
+                    changed = true;
+                    return false;
+                }
+                return true; // ancora irrisolto, resta in sospeso per il prossimo giro
+            });
         }
+
+        // Chi resta (nessun genitore in questo albero, es. capostipiti o
+        // rami che si uniscono per matrimonio senza coniuge già risolto)
+        // mantiene l'ordine base, distanziato in modo da non collidere.
+        pending.forEach(m => {
+            const idx = base.indexOf(m);
+            provisional.set(m.id, idx * 10);
+        });
+
+        // Ordino la riga secondo la posizione calcolata; a parità, uso la
+        // data di nascita come criterio stabile.
+        const ordered = [...gen].sort((a, b) => {
+            const pa = provisional.get(a.id);
+            const pb = provisional.get(b.id);
+            if (pa !== pb) return pa - pb;
+            return (a.birthDate || '').localeCompare(b.birthDate || '');
+        });
+
+        // Fisso la posizione definitiva (con un piccolo offset crescente
+        // per disambiguare del tutto l'ordine, usata come chiave dai figli).
+        ordered.forEach((m, i) => position.set(m.id, provisional.get(m.id) + i * 0.0001));
+
+        genArrays[genIdx] = ordered;
     });
-    return result;
+
+    return genArrays;
 }
 
 function renderNode(m, highlight) {
@@ -240,7 +296,9 @@ function drawConnectors() {
         familyGroups.get(key).push(child);
     });
 
-    familyGroups.forEach(children => {
+    const familyList = [];
+
+    familyGroups.forEach((children, key) => {
         const childRects = children.map(c => rectOf(c.id)).filter(Boolean);
         if (childRects.length === 0) return;
 
@@ -252,18 +310,47 @@ function drawConnectors() {
         const parentX = parentRects.reduce((s, p) => s + p.centerX, 0) / parentRects.length;
         const parentY = Math.max(...parentRects.map(p => p.bottom));
         const childTop = Math.min(...childRects.map(c => c.top));
-        const busY = parentY + Math.max(10, (childTop - parentY) / 2);
-
         const childXs = childRects.map(c => c.centerX);
-        const minX = Math.min(parentX, ...childXs);
-        const maxX = Math.max(parentX, ...childXs);
 
+        familyList.push({
+            key,
+            childRects,
+            parentX,
+            parentY,
+            childTop,
+            minX: Math.min(parentX, ...childXs),
+            maxX: Math.max(parentX, ...childXs)
+        });
+    });
+
+    // Raggruppo le famiglie per "riga" (stesso intervallo genitori -> figli,
+    // arrotondato per tollerare piccoli scarti di misura), poi alterno il
+    // livello di altezza del bus tra famiglie vicine ("cugine") nella
+    // stessa riga, così non finiscono più alla stessa quota.
+    const gapGroups = new Map();
+    familyList.forEach(f => {
+        const gapKey = Math.round(f.parentY / 4) * 4;
+        if (!gapGroups.has(gapKey)) gapGroups.set(gapKey, []);
+        gapGroups.get(gapKey).push(f);
+    });
+
+    const TIERS = 3;
+    gapGroups.forEach(group => {
+        group.sort((a, b) => a.minX - b.minX);
+        group.forEach((f, i) => {
+            const tier = i % TIERS;
+            const range = f.childTop - f.parentY;
+            f.busY = f.parentY + range * ((tier + 1) / (TIERS + 1));
+        });
+    });
+
+    familyList.forEach(f => {
         // tronco dal punto medio dei genitori fino al bus
-        addLine(parentX, parentY, parentX, busY);
+        addLine(f.parentX, f.parentY, f.parentX, f.busY);
         // bus orizzontale, largo solo quanto serve per raggiungere i figli
-        addLine(minX, busY, maxX, busY);
+        addLine(f.minX, f.busY, f.maxX, f.busY);
         // discesa dal bus a ciascun figlio
-        childRects.forEach(c => addLine(c.centerX, busY, c.centerX, c.top));
+        f.childRects.forEach(c => addLine(c.centerX, f.busY, c.centerX, c.top));
     });
 
     container.appendChild(svg);

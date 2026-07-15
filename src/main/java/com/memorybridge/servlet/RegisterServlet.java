@@ -97,7 +97,10 @@ public class RegisterServlet extends HttpServlet {
         session.setAttribute("userId", u.getId());
         session.setAttribute("familyCode", u.getFamilyCode());
 
-        resp.getWriter().write(JsonUtil.GSON.toJson(u.toSafeCopy()));
+        resp.getWriter().write(JsonUtil.GSON.toJson(Map.of(
+                "user", u.toSafeCopy(),
+                "isNewFamily", isNewFamily
+        )));
     }
 
     /**

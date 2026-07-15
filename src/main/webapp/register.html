@@ -91,7 +91,7 @@
                     <p class="text-muted" style="margin-top:4px;font-size:0.85em">
                         Scegli un nome per il tuo nuovo nucleo familiare:
                     </p>
-                    <input type="text" id="newFamilyName" placeholder="Es. Famiglia Rossi">
+                    <input type="text" id="newFamilyName" placeholder="es. Famiglia Rossi">
                 </div>
             </div>
 
@@ -170,8 +170,11 @@
         }
 
         try {
-            await api.post('/api/register', body);
-            window.location.href = 'home.html';
+            const result = await api.post('/api/register', body);
+            // Chi crea un nuovo nucleo è già l'unico membro dell'albero;
+            // chi si unisce con invito/codice esistente deve prima dirci
+            // se è già presente nell'albero o va aggiunto come nuovo nodo.
+            window.location.href = result.isNewFamily ? 'home.html' : 'link-member.html';
         } catch (err) {
             errEl.textContent = err.message;
             errEl.classList.remove('hidden');

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Bridge - Trovati nell'albero</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .picker-grid {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            padding: 16px 0;
+        }
+        .picker-card {
+            cursor: pointer;
+            border: 2px solid transparent;
+            border-radius: 10px;
+            padding: 6px;
+            text-align: center;
+            transition: border-color 0.15s, background 0.15s;
+        }
+        .picker-card:hover { border-color: var(--primary-light); }
+        .picker-card.selected { border-color: var(--primary); background: var(--primary-light); }
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 28px 0;
+            color: var(--text-muted);
+        }
+        .divider::before, .divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: var(--primary-light);
+        }
+    </style>
+</head>
+<body>
+<div id="navbar-slot"></div>
+
+<main class="container">
+    <h1>Sei già nell'albero genealogico?</h1>
+    <p class="text-muted mb-2">Ti sei unito a una famiglia esistente su Memory Bridge. Aiutaci a capire chi sei nell'albero.</p>
+
+    <section id="unlinked-section">
+        <h2>Tocca il tuo nodo, se lo trovi qui sotto</h2>
+        <div id="unlinked-grid" class="picker-grid">
+            <p class="text-muted">Caricamento…</p>
+        </div>
+        <button class="big-btn primary" id="confirm-self-btn" disabled>Sì, sono io</button>
+    </section>
+
+    <div class="divider">oppure</div>
+
+    <section>
+        <button class="big-btn outline full" id="create-new-btn">Non mi trovo: aggiungimi come nuovo membro</button>
+    </section>
+
+    <button class="big-btn secondary full mt-2" id="skip-btn">Salta per ora</button>
+</main>
+
+<!-- Step 1 del flusso "nuovo membro": rispetto a chi vuoi collegarti -->
+<div class="modal-backdrop hidden" id="target-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Rispetto a chi vuoi collegarti?</h2>
+            <button class="modal-close" onclick="closeTargetModal()">×</button>
+        </div>
+        <div id="target-grid" class="picker-grid"></div>
+    </div>
+</div>
+
+<!-- Step 2: che relazione hai con quella persona -->
+<div class="modal-backdrop hidden" id="relation-modal">
+    <div class="modal" style="max-width:420px">
+        <div class="modal-header">
+            <h2>Che relazione hai con <span id="relation-target-name"></span>?</h2>
+            <button class="modal-close" onclick="closeRelationModal()">×</button>
+        </div>
+        <div class="relation-grid" id="relation-grid"></div>
+    </div>
+</div>
+
+<!-- Step 3: i tuoi dati -->
+<div class="modal-backdrop hidden" id="member-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Completa il tuo profilo nell'albero</h2>
+            <button class="modal-close" onclick="closeMemberModal()">×</button>
+        </div>
+        <p class="text-muted" id="relation-hint" style="margin-bottom:12px"></p>
+        <form id="member-form">
+            <div class="form-group">
+                <label for="m-firstName">Nome</label>
+                <input type="text" id="m-firstName" required>
+            </div>
+            <div class="form-group">
+                <label for="m-lastName">Cognome</label>
+                <input type="text" id="m-lastName" required>
+            </div>
+            <div class="form-group">
+                <label for="m-gender">Genere</label>
+                <select id="m-gender">
+                    <option value="F">Femmina</option>
+                    <option value="M">Maschio</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="m-birthDate">Data di nascita</label>
+                <input type="date" id="m-birthDate">
+            </div>
+            <div class="form-group">
+                <label for="m-birthPlace">Luogo di nascita</label>
+                <input type="text" id="m-birthPlace">
+            </div>
+            <div id="member-error" class="error-message hidden"></div>
+            <div class="modal-actions">
+                <button type="button" class="big-btn outline" onclick="closeMemberModal()">Annulla</button>
+                <button type="submit" class="big-btn primary">Salva e vai all'albero</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/navbar.js"></script>
+<script src="js/link-member.js"></script>
+</body>
+</html>

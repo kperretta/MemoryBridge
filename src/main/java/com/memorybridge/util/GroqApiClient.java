@@ -47,6 +47,12 @@ public class GroqApiClient {
     // (il tier gratuito e la lista modelli possono cambiare nel tempo)
     private static final String MODEL = "llama-3.1-8b-instant";
 
+    // Placeholder usato quando un turno dell'utente non ha testo (es. risposta
+    // solo audio, non trascritta). Deve essere identico a quello citato nei
+    // system prompt di IrisServlet, cosi' il modello sa come interpretarlo.
+    private static final String VOICE_PLACEHOLDER =
+            "[risposta vocale dell'utente, contenuto non trascritto]";
+
     private static final HttpClient CLIENT = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10))
             .build();
@@ -60,8 +66,6 @@ public class GroqApiClient {
         return nextIrisMessage(systemPrompt, history, 300);
     }
 
-
-
     /**
      * Come sopra, ma con un limite di token personalizzabile — utile per
      * compiti che richiedono output più lunghi (es. l'elaborazione di un
@@ -73,15 +77,20 @@ public class GroqApiClient {
                     "Chiave Groq non configurata: imposta GROQ_API_KEY o valorizza FALLBACK_API_KEY.");
         }
 
-
         // Formato OpenAI-compatibile: messages = [{role, content}, ...]
+        // I turni senza testo (es. risposte solo audio, non trascritte) NON
+        // vengono scartati: se li togliessimo, il modello penserebbe che la
+        // conversazione non e' ancora iniziata e ripeterebbe la domanda di
+        // apertura. Li sostituiamo invece con un marker esplicito, spiegato
+        // nei system prompt, cosi' il modello sa che c'e' stata una risposta
+        // ma non ne conosce il contenuto (e non deve inventarlo).
         List<Map<String, String>> messages = new ArrayList<>();
         messages.add(Map.of("role", "system", "content", systemPrompt));
         for (Map<String, String> m : history) {
             String role = "user".equals(m.get("role")) ? "user" : "assistant";
             String text = m.get("text");
             if (text == null || text.isBlank()) {
-                text = "[messaggio audio, nessuna trascrizione testuale disponibile]";
+                text = VOICE_PLACEHOLDER;
             }
             messages.add(Map.of("role", role, "content", text));
         }
@@ -120,8 +129,5 @@ public class GroqApiClient {
         } catch (Exception e) {
             throw new RuntimeException("Chiamata a Groq fallita: " + e.getMessage(), e);
         }
-
     }
-
-
 }

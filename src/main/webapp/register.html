@@ -5,6 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Memory Bridge - Registrati</title>
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        .family-choice {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+        .family-choice label {
+            flex: 1;
+            min-width: 140px;
+            text-align: center;
+            border: 2px solid var(--primary-light);
+            border-radius: 8px;
+            padding: 10px 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.15s, border-color 0.15s;
+        }
+        .family-choice input {
+            display: none;
+        }
+        .family-choice input:checked + label {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            font-weight: 600;
+        }
+        .family-detail { display: none; }
+        .family-detail.active { display: block; }
+    </style>
 </head>
 <body>
 <div class="auth-page">
@@ -32,14 +61,40 @@
                 <label for="password">Password</label>
                 <input type="password" id="password" required minlength="4">
             </div>
+
             <div class="form-group">
-                <label for="inviteCode">Codice invito <span style="color:var(--text-muted);font-weight:400">(se ricevuto)</span></label>
-                <input type="text" id="inviteCode" placeholder="es. A1B2C3D4">
+                <label>Il tuo nucleo familiare</label>
+                <div class="family-choice">
+                    <input type="radio" name="familyChoice" id="choice-invite" value="invite">
+                    <label for="choice-invite">Ho un codice invito</label>
+
+                    <input type="radio" name="familyChoice" id="choice-existing" value="existing">
+                    <label for="choice-existing">Ho un codice famiglia</label>
+
+                    <input type="radio" name="familyChoice" id="choice-new" value="new">
+                    <label for="choice-new">Crea un nuovo nucleo</label>
+                </div>
+
+                <div class="family-detail" id="detail-invite">
+                    <p class="text-muted" style="margin-top:4px;font-size:0.85em">
+                        Inserisci il tuo codice invito:
+                    </p>
+                    <input type="text" id="inviteCode" placeholder="es. A1B2C3D4">
+                </div>
+                <div class="family-detail" id="detail-existing">
+                    <p class="text-muted" style="margin-top:4px;font-size:0.85em">
+                        Inserisci il codice identificativo del tuo nucleo familiare:
+                    </p>
+                    <input type="text" id="familyCode" placeholder="es. ROSSI2025">
+                </div>
+                <div class="family-detail" id="detail-new">
+                    <p class="text-muted" style="margin-top:4px;font-size:0.85em">
+                        Scegli un nome per il tuo nuovo nucleo familiare:
+                    </p>
+                    <input type="text" id="newFamilyName" placeholder="Es. Famiglia Rossi">
+                </div>
             </div>
-            <div class="form-group">
-                <label for="familyCode">oppure Codice famiglia esistente</label>
-                <input type="text" id="familyCode" placeholder="es. ROSSI2025">
-            </div>
+
             <div id="error" class="error-message hidden"></div>
             <button type="submit" class="btn btn-primary btn-block">Registrati</button>
         </form>
@@ -52,22 +107,67 @@
 
 <script src="js/api.js"></script>
 <script>
-    // Pre-compila il codice invito se presente nell'URL: register.html?invite=XXXX
+    // Pre-compila e seleziona automaticamente l'opzione "invito" se presente
+    // nell'URL: register.html?invite=XXXX
     const urlInvite = new URLSearchParams(window.location.search).get('invite');
-    if (urlInvite) document.getElementById('inviteCode').value = urlInvite;
+    const choices = ['invite', 'existing', 'new'];
+
+    function showDetail(choice) {
+        choices.forEach(c => {
+            document.getElementById(`detail-${c}`).classList.toggle('active', c === choice);
+        });
+    }
+
+    choices.forEach(c => {
+        document.getElementById(`choice-${c}`).addEventListener('change', () => showDetail(c));
+    });
+
+    if (urlInvite) {
+        document.getElementById('inviteCode').value = urlInvite;
+        document.getElementById('choice-invite').checked = true;
+        showDetail('invite');
+    } else {
+        document.getElementById('choice-new').checked = true;
+        showDetail('new');
+    }
 
     document.getElementById('register-form').addEventListener('submit', async (e) => {
         e.preventDefault();
+        const errEl = document.getElementById('error');
+        errEl.classList.add('hidden');
+
+        const choice = document.querySelector('input[name="familyChoice"]:checked')?.value;
+        if (!choice) {
+            errEl.textContent = 'Scegli come vuoi collegarti a un nucleo familiare';
+            errEl.classList.remove('hidden');
+            return;
+        }
+
         const body = {
             firstName: document.getElementById('firstName').value.trim(),
             lastName: document.getElementById('lastName').value.trim(),
             email: document.getElementById('email').value.trim(),
             password: document.getElementById('password').value,
-            inviteCode: document.getElementById('inviteCode').value.trim(),
-            familyCode: document.getElementById('familyCode').value.trim()
+            inviteCode: choice === 'invite' ? document.getElementById('inviteCode').value.trim() : '',
+            familyCode: choice === 'existing' ? document.getElementById('familyCode').value.trim() : '',
+            newFamilyName: choice === 'new' ? document.getElementById('newFamilyName').value.trim() : ''
         };
-        const errEl = document.getElementById('error');
-        errEl.classList.add('hidden');
+
+        if (choice === 'invite' && !body.inviteCode) {
+            errEl.textContent = 'Inserisci il codice invito ricevuto';
+            errEl.classList.remove('hidden');
+            return;
+        }
+        if (choice === 'existing' && !body.familyCode) {
+            errEl.textContent = 'Inserisci il codice famiglia';
+            errEl.classList.remove('hidden');
+            return;
+        }
+        if (choice === 'new' && !body.newFamilyName) {
+            errEl.textContent = 'Dai un nome al tuo nuovo nucleo familiare';
+            errEl.classList.remove('hidden');
+            return;
+        }
 
         try {
             await api.post('/api/register', body);

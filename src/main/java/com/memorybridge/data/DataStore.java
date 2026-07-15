@@ -55,6 +55,21 @@ public class DataStore {
                 .toList();
     }
 
+    /**
+     * Verifica se un familyCode è già in uso, sia da utenti registrati sia
+     * da membri dell'albero (es. un familiare aggiunto senza account).
+     * Usato per evitare collisioni quando si genera un nuovo codice famiglia
+     * e per validare un codice inserito a mano in registrazione.
+     */
+    public boolean familyCodeExists(String familyCode) {
+        if (familyCode == null || familyCode.isBlank()) return false;
+        boolean inUsers = users.values().stream()
+                .anyMatch(u -> familyCode.equalsIgnoreCase(u.getFamilyCode()));
+        if (inUsers) return true;
+        return familyMembers.values().stream()
+                .anyMatch(m -> familyCode.equalsIgnoreCase(m.getFamilyCode()));
+    }
+
     // ==================== FAMILY MEMBERS ====================
 
     public FamilyMember addFamilyMember(FamilyMember m) {

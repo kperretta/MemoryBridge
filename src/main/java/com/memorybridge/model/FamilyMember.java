@@ -20,6 +20,7 @@ public class FamilyMember {
     private Long spouseId;
     private String familyCode;     // a quale famiglia appartiene
     private Long mediaId;          // foto profilo del membro
+    private Long userId;           // se questo nodo corrisponde a un User registrato, il suo id
 
     public FamilyMember() {}
 
@@ -76,6 +77,9 @@ public class FamilyMember {
 
     public Long getMediaId() { return mediaId; }
     public void setMediaId(Long mediaId) { this.mediaId = mediaId; }
+
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
 
     public String getFullName() { return firstName + " " + lastName; }
 }

@@ -53,13 +53,6 @@ src/main/
     └── index.html     → login
 ```
 
-## Endpoint REST
-
-Tutti gli endpoint richiedono sessione autenticata (cookie).
-Il body è sempre JSON, la risposta è sempre JSON.
-
-## Divisione del lavoro
-
 ## Miglioramenti dall'Assignment 3 già implementati
 
 - **#2**: etichetta testuale "Registra audio" accanto al microfono in chat

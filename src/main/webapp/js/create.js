@@ -317,12 +317,18 @@ async function publish(extraDescription) {
         ? extraDescription
         : document.getElementById('c-description').value.trim();
 
-    const err = document.getElementById('c-error');
-    err.classList.add('hidden');
+    // Se lo step di anteprima Iris e' visibile, gli errori vanno mostrati li',
+    // altrimenti (pubblicazione diretta da step-capture) nel contenitore normale.
+    const errorTarget = document.getElementById('step-iris-preview').classList.contains('hidden')
+        ? 'c-error'
+        : 'describe-preview-error';
 
-    if (!uploadedMediaId) { showErr('Carica o registra prima un contenuto.'); return false; }
-    if (!title) { showErr('Dai un titolo al tuo ricordo.'); return false; }
-    if (!personId) { showErr('Scegli il protagonista del ricordo.'); return false; }
+    document.getElementById('c-error').classList.add('hidden');
+    document.getElementById('describe-preview-error').classList.add('hidden');
+
+    if (!uploadedMediaId) { showErr('Carica o registra prima un contenuto.', errorTarget); return false; }
+    if (!title) { showErr('Dai un titolo al tuo ricordo (torna allo step precedente).', errorTarget); return false; }
+    if (!personId) { showErr('Scegli il protagonista del ricordo (torna allo step precedente).', errorTarget); return false; }
 
     try {
         const saved = await api.post('/api/memories', {
@@ -337,16 +343,17 @@ async function publish(extraDescription) {
         showStep('step-done');
         return true;
     } catch (e) {
-        showErr('Errore: ' + e.message);
+        showErr('Errore: ' + e.message, errorTarget);
         return false;
     }
 }
 
-function showErr(msg) {
-    const err = document.getElementById('c-error');
+function showErr(msg, targetId) {
+    const id = targetId || 'c-error';
+    const err = document.getElementById(id);
     err.textContent = msg;
     err.classList.remove('hidden');
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    err.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 /* ============ MODIFICA CON IRIS ============ */
@@ -463,13 +470,12 @@ document.getElementById('describe-preview-publish-btn').addEventListener('click'
     const finalDescription = document.getElementById('describe-preview-text').value.trim();
     if (!finalDescription) return;
     document.getElementById('c-description').value = finalDescription;
-    const ok = await publish(finalDescription);
-    if (!ok) showStep('step-iris-preview');
+    await publish(finalDescription);
 });
+
 /* ============ DONE ============ */
 document.getElementById('show-content-btn').addEventListener('click', () => {
     window.location.href = publishedMemoryId
         ? `home.html?open=${publishedMemoryId}`
         : 'home.html';
 });
-

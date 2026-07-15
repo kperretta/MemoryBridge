@@ -330,14 +330,7 @@ function showPostSaveChoice() {
     document.getElementById('another-memory-btn').onclick = () => window.location.reload();
     document.getElementById('go-home-btn').onclick = () => window.location.href = 'home.html';
 }
-/* Prepara la history per l'invio al backend: i turni audio senza
-   trascrizione testuale vengono sostituiti con un placeholder, cosi'
-   Groq non riceve mai un messaggio con contenuto vuoto. */
+
 function buildHistoryForApi() {
-    return conversation.map(m => ({
-        role: m.role,
-        text: (m.mediaId && !m.text)
-            ? '[ha condiviso un ricordo tramite un messaggio audio, senza descriverlo a parole]'
-            : m.text
-    }));
+    return conversation.map(m => ({ role: m.role, text: m.text || '' }));
 }

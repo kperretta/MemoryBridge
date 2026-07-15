@@ -11,6 +11,7 @@ let mediaRecorder = null;
 let recordedChunks = [];
 let activeStream = null;
 
+// Consigli generici di riserva, usati solo se Iris (Groq) non risponde
 const SUGGESTIONS = {
     audio: [
         'Racconta <strong>quando</strong> è avvenuto ciò di cui parli (anche solo l\'anno)',
@@ -54,7 +55,7 @@ document.querySelectorAll('.type-card').forEach(card => {
 });
 
 function showStep(id) {
-    ['step-type', 'step-capture', 'step-iris-choice', 'step-iris-describe', 'step-done']
+    ['step-type', 'step-capture', 'step-iris-choice', 'step-iris-describe', 'step-iris-preview', 'step-done']
         .forEach(s => document.getElementById(s).classList.add('hidden'));
     document.getElementById(id).classList.remove('hidden');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -79,12 +80,34 @@ function showCaptureStep() {
         bar.appendChild(makeFileInput('image/*', 'Carica una foto'));
     }
 
-    // Suggerimenti Iris per tipo
-    document.getElementById('iris-suggestions').innerHTML =
-        '<ul>' + SUGGESTIONS[contentType].map(s => `<li>${s}</li>`).join('') + '</ul>';
-
+    loadIrisSuggestions();
 
     showStep('step-capture');
+}
+
+/* Carica i consigli di Iris (generati da Groq in base al tipo di contenuto e
+   al titolo, se già scritto). Se Groq non risponde, ricade sui consigli
+   generici predefiniti: qui va bene un fallback silenzioso, sono solo
+   suggerimenti di interfaccia, non dati che vengono salvati. */
+async function loadIrisSuggestions() {
+    const container = document.getElementById('iris-suggestions');
+    container.innerHTML = '<p class="text-muted">Iris sta pensando a qualche consiglio…</p>';
+    try {
+        const title = document.getElementById('c-title').value.trim();
+        const result = await api.post('/api/iris', { action: 'suggest', contentType, title });
+        if (!result.suggestions || !result.suggestions.length) throw new Error('Nessun suggerimento ricevuto');
+        container.innerHTML = '<ul>' +
+            result.suggestions.map(s => `<li>${formatSuggestion(s)}</li>`).join('') +
+            '</ul>';
+    } catch (e) {
+        console.log('Consigli AI non disponibili, uso quelli generici:', e.message);
+        container.innerHTML = '<ul>' + SUGGESTIONS[contentType].map(s => `<li>${s}</li>`).join('') + '</ul>';
+    }
+}
+
+/* Converte **parola** in <strong>parola</strong>, come nei consigli generati da Iris */
+function formatSuggestion(s) {
+    return s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 }
 
 function makeBtn(label, style, onClick, id) {
@@ -130,7 +153,6 @@ async function toggleVideoRecording() {
     if (mediaRecorder && mediaRecorder.state === 'recording') { stopRecorder(); return; }
     try {
         activeStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        // Anteprima live della camera
         const preview = document.getElementById('capture-preview');
         preview.innerHTML = '';
         const liveVideo = document.createElement('video');
@@ -193,7 +215,6 @@ async function startPhotoCapture() {
         return;
     }
     try {
-        // Su mobile prova la camera posteriore, altrimenti quella disponibile (webcam su desktop)
         try {
             activeStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
         } catch {
@@ -216,7 +237,6 @@ async function startPhotoCapture() {
     liveVideo.style.borderRadius = '12px';
     preview.appendChild(liveVideo);
 
-    // Sostituisco la barra con "Scatta ora" / "Annulla"
     const bar = document.getElementById('capture-bar');
     bar.innerHTML = '';
     bar.appendChild(makeBtn('Scatta ora', 'primary', capturePhotoFrame));
@@ -273,7 +293,6 @@ async function uploadFile(file) {
         uploadedMediaId = data.id;
         uploadedContentType = data.contentType || file.type;
 
-        // Preview del contenuto caricato
         if (uploadedContentType.startsWith('image/')) {
             preview.innerHTML = `<img src="api/media?id=${uploadedMediaId}">`;
         } else if (uploadedContentType.startsWith('audio/')) {
@@ -337,24 +356,22 @@ document.getElementById('edit-iris-btn').addEventListener('click', () => {
 });
 document.getElementById('iris-back-btn').addEventListener('click', () => showStep('step-capture'));
 
-// Opzione B: ricreare da zero -> chat guidata classica
 document.getElementById('iris-recreate-btn').addEventListener('click', () => {
     if (confirm('Verrai portato alla chat con Iris per creare un nuovo racconto da zero. Il contenuto caricato non verrà pubblicato. Continuare?')) {
         window.location.href = 'chat.html';
     }
 });
 
-// Opzione A: aggiungere descrizione via mini-chat
 const describeMessages = document.getElementById('describe-messages');
 let describeStep = 0;
-const userDescriptions = [];
+const describeHistory = []; // {role, text} — stessa forma usata da chat.js
 
-document.getElementById('iris-describe-btn').addEventListener('click', () => {
+document.getElementById('iris-describe-btn').addEventListener('click', async () => {
     showStep('step-iris-describe');
     describeMessages.innerHTML = '';
     describeStep = 0;
-    userDescriptions.length = 0;
-    irisSay('Ciao! Descrivimi questo contenuto: cosa mostra? Chi c\'è? Quando è successo?');
+    describeHistory.length = 0;
+    await askDescribeQuestion();
 });
 
 function irisSay(text) {
@@ -372,6 +389,33 @@ function userSay(text) {
     describeMessages.scrollTop = describeMessages.scrollHeight;
 }
 
+/* Chiede a Groq (via /api/iris, action=describeQuestion) la prossima
+   domanda da fare, basandosi sul tipo di contenuto, titolo e cronologia. */
+async function askDescribeQuestion() {
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'msg msg-iris typing';
+    typingDiv.textContent = 'Iris sta scrivendo…';
+    describeMessages.appendChild(typingDiv);
+    describeMessages.scrollTop = describeMessages.scrollHeight;
+
+    try {
+        const title = document.getElementById('c-title').value.trim();
+        const result = await api.post('/api/iris', {
+            action: 'describeQuestion',
+            contentType,
+            title,
+            history: describeHistory
+        });
+        typingDiv.remove();
+        if (!result.question || !result.question.trim()) throw new Error('Domanda vuota');
+        irisSay(result.question);
+        describeHistory.push({ role: 'assistant', text: result.question });
+    } catch (e) {
+        typingDiv.remove();
+        irisSay('Mi dispiace, non riesco a farti domande in questo momento. Puoi comunque scrivere liberamente e poi scrivere "fine".');
+    }
+}
+
 document.getElementById('describe-send-btn').addEventListener('click', handleDescribeSend);
 document.getElementById('describe-input').addEventListener('keydown', e => {
     if (e.key === 'Enter') { e.preventDefault(); handleDescribeSend(); }
@@ -382,36 +426,50 @@ async function handleDescribeSend() {
     const text = input.value.trim();
     if (!text) return;
     userSay(text);
-    userDescriptions.push(text);
+    describeHistory.push({ role: 'user', text });
     input.value = '';
 
     describeStep++;
-    if (describeStep === 1) {
-        setTimeout(() => irisSay('Perfetto! C\'è altro che vorresti aggiungere? Un dettaglio, un\'emozione, il contesto? (Se hai finito, scrivi "fine")'), 700);
-    } else {
-        const isDone = text.toLowerCase().includes('fine') || describeStep >= 3;
-        if (isDone) {
-            setTimeout(async () => {
-                irisSay('Ottimo! Sto componendo la descrizione e pubblico il contenuto…');
-                // "Generazione" della descrizione: unisco i contributi in modo discorsivo
-                const raw = userDescriptions.filter(t => t.toLowerCase() !== 'fine');
-                const generated = raw.join(' ').replace(/\s+/g, ' ').trim();
-                const finalDescription = generated.charAt(0).toUpperCase() + generated.slice(1) +
-                    (generated.endsWith('.') ? '' : '.') +
-                    ' — Descrizione composta con l\'aiuto di Iris.';
-                document.getElementById('c-description').value = finalDescription;
-                const ok = await publish(finalDescription);
-                if (!ok) showStep('step-capture');
-            }, 800);
-        } else {
-            setTimeout(() => irisSay('Molto bene, continua pure. (Scrivi "fine" quando hai concluso)'), 700);
-        }
+    const isDone = text.trim().toLowerCase() === 'fine' || describeStep >= 6;
+
+    if (!isDone) {
+        setTimeout(() => askDescribeQuestion(), 500);
+        return;
     }
+
+    setTimeout(async () => {
+        irisSay('Ottimo! Sto componendo la descrizione…');
+        try {
+            const historyForApi = describeHistory.filter(
+                m => !(m.role === 'user' && m.text.trim().toLowerCase() === 'fine')
+            );
+            const result = await api.post('/api/iris', { action: 'elaborate', history: historyForApi });
+            if (!result.elaborated || !result.elaborated.trim()) {
+                throw new Error('Risposta vuota da Iris');
+            }
+            document.getElementById('describe-preview-text').value = result.elaborated;
+            showStep('step-iris-preview');
+        } catch (e) {
+            irisSay('Non sono riuscita a comporre la descrizione, riprova scrivendo di nuovo "fine".');
+        }
+    }, 800);
 }
 
+document.getElementById('describe-preview-back-btn').addEventListener('click', () => {
+    showStep('step-iris-describe');
+});
+
+document.getElementById('describe-preview-publish-btn').addEventListener('click', async () => {
+    const finalDescription = document.getElementById('describe-preview-text').value.trim();
+    if (!finalDescription) return;
+    document.getElementById('c-description').value = finalDescription;
+    const ok = await publish(finalDescription);
+    if (!ok) showStep('step-iris-preview');
+});
 /* ============ DONE ============ */
 document.getElementById('show-content-btn').addEventListener('click', () => {
     window.location.href = publishedMemoryId
         ? `home.html?open=${publishedMemoryId}`
         : 'home.html';
 });
+

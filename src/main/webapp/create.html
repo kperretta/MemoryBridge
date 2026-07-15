@@ -76,10 +76,14 @@
         <!-- Banner Iris consiglia -->
         <div class="iris-banner">
             <div class="iris-avatar-sm">
+                <img src="img/site/gufo.png" alt="Iris" style="width:100%;height:100%;object-fit:cover;border-radius:50%">
             </div>
 
             <div>
-                <h3>Iris consiglia</h3>
+                <h3>
+                    <img src="img/site/gufo.png" alt="Iris" style="width:22px;height:22px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:6px">
+                    Iris consiglia
+                </h3>
                 <div id="iris-suggestions"></div>
             </div>
         </div>
@@ -128,7 +132,29 @@
         </div>
     </section>
 
-    <!-- STEP 5: pubblicato! -->
+    <!-- STEP 5: anteprima descrizione elaborata da Iris, prima della pubblicazione -->
+    <section id="step-iris-preview" class="hidden">
+        <div class="chat-header">
+            <div class="iris-avatar">
+                <img src="img/site/gufo.png" alt="Avatar Gufo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+            </div>
+            <div>
+                <h2 style="margin:0">Ecco la descrizione</h2>
+                <p class="text-muted" style="font-size:13px;margin:0">Puoi modificarla prima di pubblicare</p>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <textarea id="describe-preview-text" rows="6" style="width:100%"></textarea>
+        </div>
+
+        <div class="flex-row mt-2" style="flex-wrap:wrap">
+            <button class="big-btn outline" id="describe-preview-back-btn" style="flex:1">Torna alla chat</button>
+            <button class="big-btn primary" id="describe-preview-publish-btn" style="flex:1">Pubblica</button>
+        </div>
+    </section>
+
+    <!-- STEP 6: pubblicato! -->
     <section id="step-done" class="hidden text-center">
 
         <img src="img/site/gufo.png" alt="Avatar Gufo" style="width: 40%; height: 40%; object-fit: cover; border-radius: 50%;">

@@ -9,10 +9,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b36b1a15-c51e-4c3f-8a8d-6a46c344b8bf" name="Changes" comment="fix(iris): Aggiunta iris in crea contenuto">
+    <list default="true" id="b36b1a15-c51e-4c3f-8a8d-6a46c344b8bf" name="Changes" comment="Individua membro nell'albero al momento della registrazione">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/webapp/create.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/create.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/webapp/js/create.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/js/create.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -22,8 +20,10 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Servlet" />
         <option value="Class" />
+        <option value="Servlet" />
+        <option value="JavaScript File" />
+        <option value="HTML File" />
       </list>
     </option>
   </component>
@@ -69,22 +69,24 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;Tomcat Server.Tomcat 11.0.41.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/ireneiuorio/Desktop/MemoryBridge/src/main/resources/demo-media&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;vcs.Git&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "DefaultHtmlFileTemplate": "HTML File",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "Tomcat Server.Tomcat 11.0.4.executor": "Run",
+    "Tomcat Server.Tomcat 11.0.41.executor": "Run",
+    "git-widget-placeholder": "master",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/ireneiuorio/Desktop/MemoryBridge/src/main/resources/demo-media",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "vcs.Git",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/main/resources/demo-media" />
@@ -93,12 +95,13 @@
       <recent name="$PROJECT_DIR$" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Katia\IdeaProjects\MemoryBridge\src\main\webapp" />
       <recent name="$PROJECT_DIR$/src/main/resources/demo-media" />
     </key>
   </component>
   <component name="RunManager">
-    <configuration name="Tomcat 11.0.41" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local" APPLICATION_SERVER_NAME="Tomcat 11.0.41" ALTERNATIVE_JRE_ENABLED="false" nameIsGenerated="true">
-      <option name="BROWSER_ID" value="a7bb68e0-33c0-4d6f-a81a-aac1fdb870c8" />
+    <configuration name="Tomcat 11.0.4" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local" APPLICATION_SERVER_NAME="Tomcat 11.0.4" ALTERNATIVE_JRE_ENABLED="false" nameIsGenerated="true">
+      <option name="BROWSER_ID" value="98ca6316-2f89-46d9-a9e5-fa9e2b0625b3" />
       <option name="UPDATING_POLICY" value="restart-server" />
       <deployment>
         <artifact name="MemoryBridge:war">
@@ -229,7 +232,7 @@
       <workItem from="1784115267118" duration="16000" />
       <workItem from="1784125488007" duration="44000" />
       <workItem from="1784135507828" duration="3000" />
-      <workItem from="1784146304262" duration="4550000" />
+      <workItem from="1784146304262" duration="3014000" />
     </task>
     <task id="LOCAL-00001" summary=" Implementazione iniziale Memory Bridge">
       <option name="closed" value="true" />
@@ -359,13 +362,13 @@
       <option name="project" value="LOCAL" />
       <updated>1784065782291</updated>
     </task>
-    <task id="LOCAL-00017" summary="fix(iris): Aggiunta iris in crea contenuto">
+    <task id="LOCAL-00017" summary="Individua membro nell'albero al momento della registrazione">
       <option name="closed" value="true" />
-      <created>1784149569293</created>
+      <created>1784153601047</created>
       <option name="number" value="00017" />
       <option name="presentableId" value="LOCAL-00017" />
       <option name="project" value="LOCAL" />
-      <updated>1784149569293</updated>
+      <updated>1784153601047</updated>
     </task>
     <option name="localTasksCounter" value="18" />
     <servers />
@@ -395,7 +398,7 @@
     <MESSAGE value="fix(iris): aggiutno Groq+ risolto blocco elaborazione racconto Groq + rinforzo anti-invenzione" />
     <MESSAGE value="fix(iris): aggiunta elaborazione del testo anche con allegato audio" />
     <MESSAGE value="fix(iris): gestisce audio senza testo e avvio libero della conversazione senza tema selezionato" />
-    <MESSAGE value="fix(iris): Aggiunta iris in crea contenuto" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix(iris): Aggiunta iris in crea contenuto" />
+    <MESSAGE value="Individua membro nell'albero al momento della registrazione" />
+    <option name="LAST_COMMIT_MESSAGE" value="Individua membro nell'albero al momento della registrazione" />
   </component>
 </project>

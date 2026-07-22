@@ -66,29 +66,27 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="c-eventDate">Quando è successo? <span class="label-optional">(facoltativo)</span></label>
+                    <label for="c-eventDate">Quando è successo? <span class="label-optional">(Facoltativo)</span></label>
                     <input type="date" id="c-eventDate">
                 </div>
             </div>
 
             <div class="form-group mb-0">
-                <label for="c-description">Didascalia <span class="label-optional">(facoltativa)</span></label>
-                <textarea id="c-description" placeholder="Aggiungi qualche dettaglio…"></textarea>
-            </div>
-        </div>
-
-        <!-- Banner Iris consiglia -->
-        <div class="iris-banner">
-            <div class="iris-avatar-sm">
-                <img src="img/site/gufo.png" alt="Iris" style="width:100%;height:100%;object-fit:cover;border-radius:50%">
-            </div>
-
-            <div>
-                <h3>
-                    <img src="img/site/gufo.png" alt="Iris" style="width:22px;height:22px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:6px">
-                    Iris consiglia
-                </h3>
-                <div id="iris-suggestions"></div>
+                <label for="c-description">Didascalia <span class="label-optional">(Facoltativa)</span></label>
+                <!-- Banner Iris consiglia -->
+                <div class="iris-banner">
+                    <div class="iris-avatar-sm">
+                        <img src="img/site/gufo.png" alt="Iris" style="width:120%;height:120%;object-fit:cover;">
+                    </div>
+                    <div>
+                        <h3>
+                            <img src="img/site/gufo.png" alt="Iris" style="width:22px;height:22px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:6px">
+                            Iris consiglia
+                        </h3>
+                        <div id="iris-suggestions"></div>
+                    </div>
+                </div>
+                <textarea id="c-description" placeholder="Aggiungi una didascalia…"></textarea>
             </div>
         </div>
 
@@ -96,71 +94,11 @@
 
         <div class="flex-row mt-2" style="flex-wrap:wrap">
             <button class="big-btn primary" id="publish-btn" style="flex:1">Pubblica</button>
-            <button class="big-btn secondary" id="edit-iris-btn" style="flex:1">Modifica con Iris</button>
         </div>
         <button class="btn btn-outline btn-block mt-2" onclick="window.location.href='home.html'">Annulla</button>
     </section>
 
-    <!-- STEP 3: scelta modalità Iris -->
-    <section id="step-iris-choice" class="hidden">
-        <h1>Cosa vuoi fare con Iris?</h1>
-        <p class="text-muted mb-2">Iris può aiutarti a completare il tuo contenuto.</p>
-        <div style="display:flex;flex-direction:column;gap:14px">
-            <button class="big-btn primary full" id="iris-describe-btn">
-                Aggiungere una descrizione al contenuto
-            </button>
-            <button class="big-btn secondary full" id="iris-recreate-btn">
-                Ricreare il contenuto da zero
-            </button>
-            <button class="btn btn-outline" id="iris-back-btn">← Torna indietro</button>
-        </div>
-    </section>
-
-    <!-- STEP 4: chat descrizione con Iris -->
-    <section id="step-iris-describe" class="hidden">
-        <div class="chat-header">
-            <div class="iris-avatar">
-                <img src="img/site/gufo.png" alt="Avatar Gufo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-            </div>
-            <div>
-                <h2 style="margin:0">Iris</h2>
-                <p class="text-muted" style="font-size:13px;margin:0">Descriviamo insieme il tuo contenuto</p>
-            </div>
-        </div>
-
-        <div class="chat-messages" id="describe-messages" style="max-height:400px;min-height:200px;overflow-y:auto"></div>
-
-        <div class="chat-input">
-            <input type="text" id="describe-input" placeholder="Scrivi la tua risposta…">
-            <button class="btn btn-primary" id="describe-send-btn">Invia</button>
-        </div>
-    </section>
-
-    <!-- STEP 5: anteprima descrizione elaborata da Iris, prima della pubblicazione -->
-    <section id="step-iris-preview" class="hidden">
-        <div class="chat-header">
-            <div class="iris-avatar">
-                <img src="img/site/gufo.png" alt="Avatar Gufo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-            </div>
-            <div>
-                <h2 style="margin:0">Ecco la descrizione</h2>
-                <p class="text-muted" style="font-size:13px;margin:0">Puoi modificarla prima di pubblicare</p>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <textarea id="describe-preview-text" rows="15" style="width:100%"></textarea>
-        </div>
-
-        <div id="describe-preview-error" class="error-message hidden"></div>
-
-        <div class="flex-row mt-2" style="flex-wrap:wrap">
-            <button class="big-btn outline" id="describe-preview-back-btn" style="flex:1">Torna alla chat</button>
-            <button class="big-btn primary" id="describe-preview-publish-btn" style="flex:1">Pubblica</button>
-        </div>
-    </section>
-
-    <!-- STEP 6: pubblicato! -->
+    <!-- pubblicato! -->
     <section id="step-done" class="hidden text-center">
 
         <img src="img/site/gufo.png" alt="Avatar Gufo" style="width: 40%; height: 40%; object-fit: cover; border-radius: 50%;">

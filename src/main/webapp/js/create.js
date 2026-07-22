@@ -1,4 +1,4 @@
-/* Flusso "Crea contenuto": tipo -> carica/registra -> Iris consiglia -> pubblica / modifica con Iris */
+/* Flusso "Crea contenuto": tipo -> carica/registra -> suggerimenti -> pubblica */
 
 let contentType = null;       // 'audio' | 'video' | 'photo'
 let uploadedMediaId = null;
@@ -11,7 +11,7 @@ let mediaRecorder = null;
 let recordedChunks = [];
 let activeStream = null;
 
-// Consigli generici di riserva, usati solo se Iris (Groq) non risponde
+// Consigli predefiniti per tipo di contenuto
 const SUGGESTIONS = {
     audio: [
         'Racconta <strong>quando</strong> è avvenuto ciò di cui parli (anche solo l\'anno)',
@@ -55,8 +55,11 @@ document.querySelectorAll('.type-card').forEach(card => {
 });
 
 function showStep(id) {
-    ['step-type', 'step-capture', 'step-iris-choice', 'step-iris-describe', 'step-iris-preview', 'step-done']
-        .forEach(s => document.getElementById(s).classList.add('hidden'));
+    ['step-type', 'step-capture', 'step-done']
+        .forEach(s => {
+            const el = document.getElementById(s);
+            if (el) el.classList.add('hidden');
+        });
     document.getElementById(id).classList.remove('hidden');
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -85,29 +88,14 @@ function showCaptureStep() {
     showStep('step-capture');
 }
 
-/* Carica i consigli di Iris (generati da Groq in base al tipo di contenuto e
-   al titolo, se già scritto). Se Groq non risponde, ricade sui consigli
-   generici predefiniti: qui va bene un fallback silenzioso, sono solo
-   suggerimenti di interfaccia, non dati che vengono salvati. */
-async function loadIrisSuggestions() {
+/* Carica sempre i suggerimenti generici predefiniti */
+function loadIrisSuggestions() {
     const container = document.getElementById('iris-suggestions');
-    container.innerHTML = '<p class="text-muted">Iris sta pensando a qualche consiglio…</p>';
-    try {
-        const title = document.getElementById('c-title').value.trim();
-        const result = await api.post('/api/iris', { action: 'suggest', contentType, title });
-        if (!result.suggestions || !result.suggestions.length) throw new Error('Nessun suggerimento ricevuto');
-        container.innerHTML = '<ul>' +
-            result.suggestions.map(s => `<li>${formatSuggestion(s)}</li>`).join('') +
-            '</ul>';
-    } catch (e) {
-        console.log('Consigli AI non disponibili, uso quelli generici:', e.message);
-        container.innerHTML = '<ul>' + SUGGESTIONS[contentType].map(s => `<li>${s}</li>`).join('') + '</ul>';
-    }
-}
+    if (!container || !SUGGESTIONS[contentType]) return;
 
-/* Converte **parola** in <strong>parola</strong>, come nei consigli generati da Iris */
-function formatSuggestion(s) {
-    return s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    container.innerHTML = '<ul>' +
+        SUGGESTIONS[contentType].map(s => `<li>${s}</li>`).join('') +
+        '</ul>';
 }
 
 function makeBtn(label, style, onClick, id) {
@@ -310,26 +298,17 @@ async function uploadFile(file) {
 /* ============ PUBBLICA ============ */
 document.getElementById('publish-btn').addEventListener('click', () => publish());
 
-async function publish(extraDescription) {
+async function publish() {
     const title = document.getElementById('c-title').value.trim();
     const personId = document.getElementById('c-person').value;
     const eventDate = document.getElementById('c-eventDate').value || null;
-    const description = extraDescription !== undefined
-        ? extraDescription
-        : document.getElementById('c-description').value.trim();
-
-    // Se lo step di anteprima Iris e' visibile, gli errori vanno mostrati li',
-    // altrimenti (pubblicazione diretta da step-capture) nel contenitore normale.
-    const errorTarget = document.getElementById('step-iris-preview').classList.contains('hidden')
-        ? 'c-error'
-        : 'describe-preview-error';
+    const description = document.getElementById('c-description').value.trim();
 
     document.getElementById('c-error').classList.add('hidden');
-    document.getElementById('describe-preview-error').classList.add('hidden');
 
-    if (!uploadedMediaId) { showErr('Carica o registra prima un contenuto.', errorTarget); return false; }
-    if (!title) { showErr('Dai un titolo al tuo ricordo (torna allo step precedente).', errorTarget); return false; }
-    if (!personId) { showErr('Scegli il protagonista del ricordo (torna allo step precedente).', errorTarget); return false; }
+    if (!uploadedMediaId) { showErr('Carica o registra prima un contenuto.'); return false; }
+    if (!title) { showErr('Dai un titolo al tuo ricordo.'); return false; }
+    if (!personId) { showErr('Scegli il protagonista del ricordo.'); return false; }
 
     try {
         const saved = await api.post('/api/memories', {
@@ -345,139 +324,24 @@ async function publish(extraDescription) {
         showStep('step-done');
         return true;
     } catch (e) {
-        showErr('Errore: ' + e.message, errorTarget);
+        showErr('Errore: ' + e.message);
         return false;
     }
 }
 
-function showErr(msg, targetId) {
-    const id = targetId || 'c-error';
-    const err = document.getElementById(id);
+function showErr(msg) {
+    const err = document.getElementById('c-error');
     err.textContent = msg;
     err.classList.remove('hidden');
     err.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
-/* ============ MODIFICA CON IRIS ============ */
-document.getElementById('edit-iris-btn').addEventListener('click', () => {
-    if (!uploadedMediaId) { showErr('Carica o registra prima un contenuto.'); return; }
-    showStep('step-iris-choice');
-});
-document.getElementById('iris-back-btn').addEventListener('click', () => showStep('step-capture'));
-
-document.getElementById('iris-recreate-btn').addEventListener('click', () => {
-    if (confirm('Verrai portato alla chat con Iris per creare un nuovo racconto da zero. Il contenuto caricato non verrà pubblicato. Continuare?')) {
-        window.location.href = 'chat.html';
-    }
-});
-
-const describeMessages = document.getElementById('describe-messages');
-let describeStep = 0;
-const describeHistory = []; // {role, text} — stessa forma usata da chat.js
-
-document.getElementById('iris-describe-btn').addEventListener('click', async () => {
-    showStep('step-iris-describe');
-    describeMessages.innerHTML = '';
-    describeStep = 0;
-    describeHistory.length = 0;
-    await askDescribeQuestion();
-});
-
-function irisSay(text) {
-    const div = document.createElement('div');
-    div.className = 'msg msg-iris';
-    div.textContent = text;
-    describeMessages.appendChild(div);
-    describeMessages.scrollTop = describeMessages.scrollHeight;
-}
-function userSay(text) {
-    const div = document.createElement('div');
-    div.className = 'msg msg-user';
-    div.textContent = text;
-    describeMessages.appendChild(div);
-    describeMessages.scrollTop = describeMessages.scrollHeight;
-}
-
-/* Chiede a Groq (via /api/iris, action=describeQuestion) la prossima
-   domanda da fare, basandosi sul tipo di contenuto, titolo e cronologia. */
-async function askDescribeQuestion() {
-    const typingDiv = document.createElement('div');
-    typingDiv.className = 'msg msg-iris typing';
-    typingDiv.textContent = 'Iris sta scrivendo…';
-    describeMessages.appendChild(typingDiv);
-    describeMessages.scrollTop = describeMessages.scrollHeight;
-
-    try {
-        const title = document.getElementById('c-title').value.trim();
-        const result = await api.post('/api/iris', {
-            action: 'describeQuestion',
-            contentType,
-            title,
-            history: describeHistory
-        });
-        typingDiv.remove();
-        if (!result.question || !result.question.trim()) throw new Error('Domanda vuota');
-        irisSay(result.question);
-        describeHistory.push({ role: 'assistant', text: result.question });
-    } catch (e) {
-        typingDiv.remove();
-        irisSay('Mi dispiace, non riesco a farti domande in questo momento. Puoi comunque scrivere liberamente e poi scrivere "fine".');
-    }
-}
-
-document.getElementById('describe-send-btn').addEventListener('click', handleDescribeSend);
-document.getElementById('describe-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter') { e.preventDefault(); handleDescribeSend(); }
-});
-
-async function handleDescribeSend() {
-    const input = document.getElementById('describe-input');
-    const text = input.value.trim();
-    if (!text) return;
-    userSay(text);
-    describeHistory.push({ role: 'user', text });
-    input.value = '';
-
-    describeStep++;
-    const isDone = text.trim().toLowerCase() === 'fine' || describeStep >= 6;
-
-    if (!isDone) {
-        setTimeout(() => askDescribeQuestion(), 500);
-        return;
-    }
-
-    setTimeout(async () => {
-        irisSay('Ottimo! Sto componendo la descrizione…');
-        try {
-            const historyForApi = describeHistory.filter(
-                m => !(m.role === 'user' && m.text.trim().toLowerCase() === 'fine')
-            );
-            const result = await api.post('/api/iris', { action: 'elaborate', history: historyForApi });
-            if (!result.elaborated || !result.elaborated.trim()) {
-                throw new Error('Risposta vuota da Iris');
-            }
-            document.getElementById('describe-preview-text').value = result.elaborated;
-            showStep('step-iris-preview');
-        } catch (e) {
-            irisSay('Non sono riuscita a comporre la descrizione, riprova scrivendo di nuovo "fine".');
-        }
-    }, 800);
-}
-
-document.getElementById('describe-preview-back-btn').addEventListener('click', () => {
-    showStep('step-iris-describe');
-});
-
-document.getElementById('describe-preview-publish-btn').addEventListener('click', async () => {
-    const finalDescription = document.getElementById('describe-preview-text').value.trim();
-    if (!finalDescription) return;
-    document.getElementById('c-description').value = finalDescription;
-    await publish(finalDescription);
-});
-
 /* ============ DONE ============ */
-document.getElementById('show-content-btn').addEventListener('click', () => {
-    window.location.href = publishedMemoryId
-        ? `home.html?open=${publishedMemoryId}`
-        : 'home.html';
-});
+const showContentBtn = document.getElementById('show-content-btn');
+if (showContentBtn) {
+    showContentBtn.addEventListener('click', () => {
+        window.location.href = publishedMemoryId
+            ? `home.html?open=${publishedMemoryId}`
+            : 'home.html';
+    });
+}

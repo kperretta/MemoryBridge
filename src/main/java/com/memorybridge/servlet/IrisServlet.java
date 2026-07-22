@@ -133,10 +133,6 @@ public class IrisServlet extends HttpServlet {
             handleSuggest(body, resp);
             return;
         }
-        if ("describeQuestion".equals(action)) {
-            handleDescribeQuestion(body, resp);
-            return;
-        }
 
         resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         resp.getWriter().write("{\"error\":\"Azione non riconosciuta\"}");
@@ -384,50 +380,6 @@ public class IrisServlet extends HttpServlet {
             System.err.println("[IrisServlet] Iris: generazione suggerimenti fallita: " + e.getMessage());
             resp.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
             resp.getWriter().write("{\"error\":\"Suggerimenti non disponibili al momento.\"}");
-        }
-    }
-
-
-    @SuppressWarnings("unchecked")
-    private void handleDescribeQuestion(Map<String, Object> body, HttpServletResponse resp) throws IOException {
-        String contentType = String.valueOf(body.getOrDefault("contentType", "audio"));
-        String title = String.valueOf(body.getOrDefault("title", "")).trim();
-        Object historyObj = body.get("history");
-        List<Map<String, String>> history = (historyObj instanceof List)
-                ? (List<Map<String, String>>) historyObj
-                : List.of();
-
-        String typeLabel = switch (contentType) {
-            case "video" -> "un video";
-            case "photo" -> "una foto";
-            default -> "un audio";
-        };
-
-        String systemPrompt = "Sei Iris, un'assistente calda ed empatica che aiuta le persone a descrivere " +
-                "a parole " + typeLabel + " che hanno appena caricato come ricordo di famiglia" +
-                (title.isBlank() ? "" : (", dal titolo \"" + title + "\"")) + ". " +
-                "IMPORTANTE: tu NON puoi vedere ne' ascoltare il contenuto caricato, conosci solo il tipo " +
-                "(" + typeLabel + ")" + (title.isBlank() ? "" : " e il titolo") + ". NON dare mai per scontato " +
-                "cosa mostra, chi c'e', dove si trova o cosa succede: fai solo domande APERTE che permettano " +
-                "all'utente di dirtelo, senza presupporre risposte o dettagli non ancora menzionati da lui. " +
-                "Se non c'e' ancora nessuna risposta dell'utente, fai una domanda di apertura generica che lo " +
-                "inviti a descrivere cosa mostra il contenuto, chi c'e' e quando e' successo, SENZA nominare " +
-                "tu stesso persone, luoghi o dettagli specifici. Se l'utente ha gia' risposto a una o piu' " +
-                "domande, fai UNA domanda di approfondimento breve basata ESCLUSIVAMENTE su cio' che ha " +
-                "scritto lui finora, riprendendo solo parole o dettagli che ha gia' usato, invece di " +
-                "ripetere sempre la stessa domanda o di aggiungerne di tuoi. Fai sempre e solo UNA domanda " +
-                "alla volta (massimo 2 frasi), sii calorosa, empatica e concisa. Rispondi SOLO con la " +
-                "domanda, senza premesse ne' saluti.";
-
-        try {
-            String question = GroqApiClient.nextIrisMessage(systemPrompt, history, 150);
-            Map<String, Object> out = new LinkedHashMap<>();
-            out.put("question", question);
-            resp.getWriter().write(JsonUtil.GSON.toJson(out));
-        } catch (Exception e) {
-            System.err.println("[IrisServlet] Iris: generazione domanda descrizione fallita: " + e.getMessage());
-            resp.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
-            resp.getWriter().write("{\"error\":\"Iris non e' raggiungibile in questo momento. Riprova tra poco.\"}");
         }
     }
 

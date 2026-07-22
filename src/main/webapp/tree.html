@@ -30,7 +30,7 @@
         <h1 style="margin:0">Albero genealogico</h1>
         <button class="big-btn primary" onclick="openAddFlow(null)">+ Aggiungi familiare</button>
     </div>
-    <p class="text-muted mb-2">Tocca un membro della famiglia per vedere le azioni disponibili.</p>
+    <p class="text-muted mb-2">Passa il mouse su un membro della famiglia per vedere le azioni disponibili.</p>
 
     <div class="tree-container">
         <div id="tree" class="tree-generations">
@@ -38,22 +38,6 @@
         </div>
     </div>
 </main>
-
-<!-- Menu contestuale nodo: 4 azioni richieste -->
-<div class="modal-backdrop hidden" id="node-menu">
-    <div class="modal" style="max-width:360px">
-        <div class="modal-header">
-            <h2 id="node-menu-name">…</h2>
-            <button class="modal-close" onclick="closeNodeMenu()">×</button>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:10px">
-            <button class="big-btn primary full" id="open-timeline-btn">Apri Timeline</button>
-            <button class="big-btn secondary full" id="add-relative-btn">Aggiungi familiare</button>
-            <button class="big-btn outline full" id="edit-btn">Modifica persona</button>
-            <button class="big-btn danger full" id="delete-btn">Elimina persona</button>
-        </div>
-    </div>
-</div>
 
 <!-- Picker relazione -->
 <div class="modal-backdrop hidden" id="relation-modal">

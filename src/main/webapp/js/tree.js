@@ -203,13 +203,61 @@ function renderNode(m, highlight) {
     const photoHtml = m.mediaId
         ? `<div class="tree-node-photo" style="overflow:hidden;padding:0"><img src="api/media?id=${m.mediaId}" style="width:100%;height:100%;object-fit:cover"></div>`
         : `<div class="tree-node-photo">${initials(m.firstName + ' ' + m.lastName)}</div>`;
+
     el.innerHTML = `
+        <div class="node-actions">
+            <button class="node-action" data-action="add" data-tip="Aggiungi familiare" aria-label="Aggiungi familiare">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+            </button>
+            <button class="node-action" data-action="edit" data-tip="Modifica" aria-label="Modifica">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                </svg>
+            </button>
+            <button class="node-action danger" data-action="delete" data-tip="Elimina" aria-label="Elimina">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                </svg>
+            </button>
+        </div>
         ${photoHtml}
         <div class="tree-node-name">${m.firstName} ${m.lastName}</div>
         <div class="tree-node-dates">${formatYearRange(m)}</div>
     `;
-    el.addEventListener('click', () => openNodeMenu(m));
+
+    // Click sul nodo (non sulle icone) => apre la timeline/profilo
+    el.addEventListener('click', (e) => {
+        if (e.target.closest('.node-action')) return;
+        window.location.href = `profile.html?id=${m.id}`;
+    });
+
+    // Handler icone
+    el.querySelectorAll('.node-action').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const action = btn.dataset.action;
+            selectedNode = m;
+            if (action === 'add') openRelationModal(m);
+            else if (action === 'edit') openEditModal(m);
+            else if (action === 'delete') handleDelete(m);
+        });
+    });
+
     return el;
+}
+
+async function handleDelete(m) {
+    const name = m.firstName + ' ' + m.lastName;
+    if (!confirm(`Vuoi davvero eliminare ${name} dall'albero?\n\nI ricordi associati resteranno salvati ma non saranno più collegati a questa persona.`)) return;
+    try {
+        await api.del(`/api/tree?id=${m.id}`);
+        toast(`${name} eliminato dall'albero`);
+        await loadTree();
+    } catch (e) {
+        alert('Errore: ' + e.message);
+    }
 }
 
 function formatYearRange(m) {
@@ -356,42 +404,7 @@ function drawConnectors() {
     container.appendChild(svg);
 }
 
-/* ============ MENU CONTESTUALE: 4 azioni ============ */
-function openNodeMenu(m) {
-    selectedNode = m;
-    document.getElementById('node-menu-name').textContent = m.firstName + ' ' + m.lastName;
-    document.getElementById('node-menu').classList.remove('hidden');
-}
-function closeNodeMenu() { document.getElementById('node-menu').classList.add('hidden'); }
-window.closeNodeMenu = closeNodeMenu;
 
-document.getElementById('open-timeline-btn').addEventListener('click', () => {
-    if (selectedNode) window.location.href = `profile.html?id=${selectedNode.id}`;
-});
-
-document.getElementById('edit-btn').addEventListener('click', () => {
-    closeNodeMenu();
-    openEditModal(selectedNode);
-});
-
-document.getElementById('add-relative-btn').addEventListener('click', () => {
-    closeNodeMenu();
-    openRelationModal(selectedNode);
-});
-
-document.getElementById('delete-btn').addEventListener('click', async () => {
-    if (!selectedNode) return;
-    const name = selectedNode.firstName + ' ' + selectedNode.lastName;
-    if (!confirm(`Vuoi davvero eliminare ${name} dall'albero?\n\nI ricordi associati resteranno salvati ma non saranno più collegati a questa persona.`)) return;
-    try {
-        await api.del(`/api/tree?id=${selectedNode.id}`);
-        closeNodeMenu();
-        toast(`${name} eliminato dall'albero`);
-        await loadTree();
-    } catch (e) {
-        alert('Errore: ' + e.message);
-    }
-});
 
 /* ============ PICKER RELAZIONE ============ */
 function openRelationModal(target) {

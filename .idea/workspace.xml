@@ -10,9 +10,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b36b1a15-c51e-4c3f-8a8d-6a46c344b8bf" name="Changes" comment="aggiunta mock in caso di assenza api key Groq">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/memorybridge/servlet/IrisServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/memorybridge/servlet/IrisServlet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/memorybridge/util/GroqApiClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/memorybridge/util/GroqApiClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/js/navbar.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/js/navbar.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/profile.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/profile.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/tree.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/tree.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,6 +32,11 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="B2" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="UPDATE_TYPE" value="REBASE" />
   </component>
@@ -102,7 +109,7 @@
     </key>
   </component>
   <component name="RunManager">
-    <configuration name="Tomcat 11.0.4" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local" APPLICATION_SERVER_NAME="Tomcat 11.0.4" ALTERNATIVE_JRE_ENABLED="false" nameIsGenerated="true">
+    <configuration name="Tomcat 11.0.41" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local" APPLICATION_SERVER_NAME="Tomcat 11.0.41" ALTERNATIVE_JRE_ENABLED="false" nameIsGenerated="true">
       <option name="BROWSER_ID" value="98ca6316-2f89-46d9-a9e5-fa9e2b0625b3" />
       <option name="UPDATING_POLICY" value="restart-server" />
       <deployment>

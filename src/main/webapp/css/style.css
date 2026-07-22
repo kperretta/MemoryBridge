@@ -1154,3 +1154,91 @@ h3 { font-family: var(--font-display); font-size: 17px; font-weight: 600; margin
    Selection color
    ============================================================ */
 ::selection { background: var(--primary-light); color: var(--primary-dark); }
+
+/* ============================================================
+   Tree node — azioni hover minimali
+   ============================================================ */
+.tree-node {
+    position: relative;
+}
+
+.node-actions {
+    position: absolute;
+    top: -14px;
+    right: -14px;
+    display: flex;
+    gap: 6px;
+    padding: 6px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    box-shadow: var(--shadow-md);
+    opacity: 0;
+    transform: translateY(-4px) scale(0.92);
+    pointer-events: none;
+    transition: opacity 0.18s var(--ease-out), transform 0.22s var(--ease-out);
+    z-index: 5;
+}
+
+.tree-node:hover .node-actions,
+.tree-node:focus-within .node-actions {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.node-action {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s, transform 0.15s;
+}
+.node-action:hover {
+    background: var(--primary-lighter);
+    color: var(--primary-dark);
+    transform: scale(1.1);
+}
+.node-action.danger:hover {
+    background: var(--danger-light);
+    color: var(--danger);
+}
+
+.node-action svg {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2;
+}
+
+/* Tooltip discreto sopra ogni icona */
+.node-action[data-tip]::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text);
+    color: var(--card);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s;
+}
+.node-action:hover[data-tip]::after {
+    opacity: 1;
+}
+
+/* Il nodo intero è comunque cliccabile per aprire la timeline */
+.tree-node {
+    cursor: pointer;
+}

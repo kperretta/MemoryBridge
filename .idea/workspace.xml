@@ -9,7 +9,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b36b1a15-c51e-4c3f-8a8d-6a46c344b8bf" name="Changes" comment="aggiornamento" />
+    <list default="true" id="b36b1a15-c51e-4c3f-8a8d-6a46c344b8bf" name="Changes" comment="icona modifica">
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_14_07_2026,_10_14_[Changes]/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_14_07_2026,_10_59_[Changes]/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_14_07_2026__10_14__Changes_.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_14_07_2026__10_59__Changes_.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/create.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/create.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/js/create.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/js/create.js" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -35,12 +43,12 @@
     &quot;assignee&quot;: &quot;ireneiuorio&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/kperretta/MemoryBridge.git",
-    "accountId": "b097eb9c-0526-4cad-9f49-8b7001acf0bc"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/kperretta/MemoryBridge.git&quot;,
+    &quot;accountId&quot;: &quot;b097eb9c-0526-4cad-9f49-8b7001acf0bc&quot;
   }
-}]]></component>
+}</component>
   <component name="KubernetesApiPersistence">{}</component>
   <component name="KubernetesApiProvider">{
   &quot;isMigrated&quot;: true
@@ -231,7 +239,8 @@
       <workItem from="1784125488007" duration="44000" />
       <workItem from="1784135507828" duration="3000" />
       <workItem from="1784146304262" duration="3014000" />
-      <workItem from="1784558846423" duration="323000" />
+      <workItem from="1784558846423" duration="2337000" />
+      <workItem from="1784734811050" duration="1135000" />
     </task>
     <task id="LOCAL-00001" summary=" Implementazione iniziale Memory Bridge">
       <option name="closed" value="true" />
@@ -377,7 +386,15 @@
       <option name="project" value="LOCAL" />
       <updated>1784559144375</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="icona modifica">
+      <option name="closed" value="true" />
+      <created>1784559260667</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1784559260667</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -407,6 +424,7 @@
     <MESSAGE value="fix(iris): gestisce audio senza testo e avvio libero della conversazione senza tema selezionato" />
     <MESSAGE value="Individua membro nell'albero al momento della registrazione" />
     <MESSAGE value="aggiornamento" />
-    <option name="LAST_COMMIT_MESSAGE" value="aggiornamento" />
+    <MESSAGE value="icona modifica" />
+    <option name="LAST_COMMIT_MESSAGE" value="icona modifica" />
   </component>
 </project>

@@ -313,6 +313,7 @@ document.getElementById('publish-btn').addEventListener('click', () => publish()
 async function publish(extraDescription) {
     const title = document.getElementById('c-title').value.trim();
     const personId = document.getElementById('c-person').value;
+    const eventDate = document.getElementById('c-eventDate').value || null;
     const description = extraDescription !== undefined
         ? extraDescription
         : document.getElementById('c-description').value.trim();
@@ -337,7 +338,8 @@ async function publish(extraDescription) {
             description,
             type: contentType,
             mediaId: uploadedMediaId,
-            taggedPersonId: parseInt(personId)
+            taggedPersonId: parseInt(personId),
+            eventDate
         });
         publishedMemoryId = saved.id;
         showStep('step-done');

@@ -9,14 +9,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b36b1a15-c51e-4c3f-8a8d-6a46c344b8bf" name="Changes" comment="icona modifica">
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_14_07_2026,_10_14_[Changes]/shelved.patch" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_14_07_2026,_10_59_[Changes]/shelved.patch" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_14_07_2026__10_14__Changes_.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_14_07_2026__10_59__Changes_.xml" beforeDir="false" />
+    <list default="true" id="b36b1a15-c51e-4c3f-8a8d-6a46c344b8bf" name="Changes" comment="aggiunta mock in caso di assenza api key Groq">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/webapp/create.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/create.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/webapp/js/create.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/js/create.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/memorybridge/servlet/IrisServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/memorybridge/servlet/IrisServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/memorybridge/util/GroqApiClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/memorybridge/util/GroqApiClient.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -240,7 +236,7 @@
       <workItem from="1784135507828" duration="3000" />
       <workItem from="1784146304262" duration="3014000" />
       <workItem from="1784558846423" duration="2337000" />
-      <workItem from="1784734811050" duration="1135000" />
+      <workItem from="1784734811050" duration="6129000" />
     </task>
     <task id="LOCAL-00001" summary=" Implementazione iniziale Memory Bridge">
       <option name="closed" value="true" />
@@ -394,7 +390,15 @@
       <option name="project" value="LOCAL" />
       <updated>1784559260667</updated>
     </task>
-    <option name="localTasksCounter" value="20" />
+    <task id="LOCAL-00020" summary="Aggiunta data a caricamento contenuto">
+      <option name="closed" value="true" />
+      <created>1784736209945</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1784736209945</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -425,6 +429,8 @@
     <MESSAGE value="Individua membro nell'albero al momento della registrazione" />
     <MESSAGE value="aggiornamento" />
     <MESSAGE value="icona modifica" />
-    <option name="LAST_COMMIT_MESSAGE" value="icona modifica" />
+    <MESSAGE value="Aggiunta data a caricamento contenuto" />
+    <MESSAGE value="aggiunta mock in caso di assenza api key Groq" />
+    <option name="LAST_COMMIT_MESSAGE" value="aggiunta mock in caso di assenza api key Groq" />
   </component>
 </project>

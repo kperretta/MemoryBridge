@@ -147,7 +147,6 @@ public class IrisServlet extends HttpServlet {
      * cronologia inviata dal frontend (parametro "history", JSON array di
      * {role, text}). Se la cronologia e' vuota (prima domanda del tema),
      * il prompt istruisce il modello a fare una domanda di apertura sul tema.
-     * Propaga qualunque eccezione al chiamante: nessun fallback qui dentro.
      */
     @SuppressWarnings("unchecked")
     private String generateQuestion(String theme, HttpServletRequest req) {
@@ -176,9 +175,9 @@ public class IrisServlet extends HttpServlet {
 
     /**
      * Trasforma la conversazione (domande di Iris + risposte dell'utente) in un
-     * racconto scorrevole in prima persona, usando SOLO le informazioni fornite
-     * dall'utente. Nessun fallback: se Groq non risponde, ritorna 503 e il
-     * frontend mostra l'errore invece di procedere con un testo di ripiego.
+     * racconto scorrevole in prima persona.
+     * Se Groq è online, usa l'IA. Se fallisce o manca la chiave API, ricade
+     * sul fallback di GroqApiClient senza bloccare l'utente.
      */
     @SuppressWarnings("unchecked")
     private void handleElaborate(Map<String, Object> body, HttpServletResponse resp) throws IOException {
@@ -190,13 +189,6 @@ public class IrisServlet extends HttpServlet {
         }
         List<Map<String, String>> history = (List<Map<String, String>>) historyObj;
 
-        // La history arriva con l'ultimo turno di ruolo "assistant" (il messaggio
-        // di chiusura di Iris, es. "Grazie per aver condiviso questo ricordo...").
-        // Se la mandiamo cosi' com'e' a Groq, l'ultima cosa che il modello vede
-        // NON e' un'istruzione a cui rispondere, e il modello si "blocca"
-        // (risponde con un solo token, finish_reason: stop).
-        // Aggiungiamo quindi in coda un messaggio esplicito di ruolo "user" che
-        // dica chiaramente al modello cosa fare adesso, ribadendo di non inventare.
         List<Map<String, String>> historyForElaboration = new ArrayList<>(history);
         historyForElaboration.add(Map.of(
                 "role", "user",
@@ -205,37 +197,92 @@ public class IrisServlet extends HttpServlet {
                         "dettaglio, lascialo fuori, non inventarlo."
         ));
 
+        String systemPrompt = "Sei un editor che riformula in prima persona una conversazione fatta " +
+                "di domande e risposte, trasformandola in un testo scorrevole, come se la persona " +
+                "stesse raccontando il ricordo di getto a voce. REGOLE FERREE: " +
+                "1) Usa ESCLUSIVAMENTE le informazioni presenti nelle risposte dell'utente. " +
+                "2) NON aggiungere nomi, luoghi, date, dettagli sensoriali, emozioni o eventi che " +
+                "l'utente non ha menzionato esplicitamente. " +
+                "3) Se un dettaglio non c'e', semplicemente non scriverlo: non riempire i vuoti con " +
+                "invenzioni. " +
+                "4) Non includere le domande fatte da Iris, solo il racconto risultante. " +
+                "5) Il tuo compito e' RIFORMULARE, non ARRICCHIRE: cambia la forma (da domanda-" +
+                "risposta a racconto scorrevole), non il contenuto. " +
+                "6) Se trovi un turno segnalato come '[risposta vocale dell'utente, contenuto non " +
+                "trascritto]', NON inventare cosa potrebbe contenere: ometti semplicemente quel " +
+                "turno dal racconto. " +
+                "Scrivi un unico testo coeso, in un tono caldo ma aderente a cio' che e' stato detto.";
+
+        String elaborated;
+
         try {
-            String systemPrompt = "Sei un editor che riformula in prima persona una conversazione fatta " +
-                    "di domande e risposte, trasformandola in un testo scorrevole, come se la persona " +
-                    "stesse raccontando il ricordo di getto a voce. REGOLE FERREE: " +
-                    "1) Usa ESCLUSIVAMENTE le informazioni presenti nelle risposte dell'utente. " +
-                    "2) NON aggiungere nomi, luoghi, date, dettagli sensoriali, emozioni o eventi che " +
-                    "l'utente non ha menzionato esplicitamente. " +
-                    "3) Se un dettaglio non c'e', semplicemente non scriverlo: non riempire i vuoti con " +
-                    "invenzioni. " +
-                    "4) Non includere le domande fatte da Iris, solo il racconto risultante. " +
-                    "5) Il tuo compito e' RIFORMULARE, non ARRICCHIRE: cambia la forma (da domanda-" +
-                    "risposta a racconto scorrevole), non il contenuto. " +
-                    "6) Se trovi un turno segnalato come '[risposta vocale dell'utente, contenuto non " +
-                    "trascritto]', NON inventare cosa potrebbe contenere: ometti semplicemente quel " +
-                    "turno dal racconto, senza lasciare vuoti, chiedi un breve riassunto dell'audio oppure un contesto all'utente "+
-                    "o cosa rappresenta l'audio per lui " +
-                    "Scrivi un unico testo coeso, in un tono caldo ma aderente a cio' che e' stato detto, " +
-                    "con una lunghezza simile a quella delle risposte fornite complessivamente.";
-
-            String elaborated = GroqApiClient.nextIrisMessage(systemPrompt, historyForElaboration, 1000);
-            System.err.println("[IrisServlet] " + "Iris: racconto elaborato da Groq con successo.");
-
-            Map<String, Object> out = new LinkedHashMap<>();
-            out.put("elaborated", elaborated);
-            resp.getWriter().write(JsonUtil.GSON.toJson(out));
+            // Tenta la chiamata a Groq
+            elaborated = GroqApiClient.nextIrisMessage(systemPrompt, historyForElaboration, 1000);
+            System.out.println("[IrisServlet] Iris: racconto elaborato con successo.");
         } catch (Exception e) {
-            System.err.println("[IrisServlet] " + "Iris: elaborazione fallita: " + e.getMessage());
-            e.printStackTrace();
-            resp.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
-            resp.getWriter().write("{\"error\":\"Non e' stato possibile elaborare il racconto. Riprova tra poco.\"}");
+            System.err.println("[IrisServlet] Chiamata Groq fallita per l'elaborazione: " + e.getMessage());
+            // Fallback locale in caso di errore di rete o chiave mancante
+            elaborated = buildLocalStoryFallback(history);
         }
+
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("elaborated", elaborated);
+        resp.getWriter().write(JsonUtil.GSON.toJson(out));
+    }
+
+    /**
+     * Helper locale di supporto per assemblare il racconto se Groq non risponde.
+     */
+    private String buildLocalStoryFallback(List<Map<String, String>> history) {
+        List<String> answers = new ArrayList<>();
+        if (history != null) {
+            for (Map<String, String> m : history) {
+                if ("user".equals(m.get("role"))) {
+                    String text = m.get("text");
+
+                    // Filtra le scelte di menu, i comandi di sistema e i messaggi vocali vuoti
+                    if (text != null && !text.isBlank()
+                            && !isThemeLabel(text)
+                            && !text.startsWith("Ora riformula")
+                            && !text.contains("risposta vocale")) {
+
+                        String clean = text.trim();
+                        // Rimuove eventuali punti o virgole finali per evitare ".. " o "., "
+                        while (clean.endsWith(".") || clean.endsWith(",")) {
+                            clean = clean.substring(0, clean.length() - 1).trim();
+                        }
+
+                        if (!clean.isEmpty()) {
+                            answers.add(clean);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Se l'utente non ha risposto a testo
+        if (answers.isEmpty()) {
+            return "Ho condiviso un ricordo speciale di famiglia che custodisco con tanto affetto.";
+        }
+
+        // --- ASSEMBLAGGIO GENERICO DEL TESTO ---
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < answers.size(); i++) {
+            String part = answers.get(i);
+
+            // Assicura che ogni frase inizi con la lettera maiuscola
+            String formattedPart = Character.toUpperCase(part.charAt(0)) + part.substring(1);
+
+            if (i > 0) {
+                sb.append(". ");
+            }
+            sb.append(formattedPart);
+        }
+
+        // Chiusura calda e generica valida per qualunque tema
+        sb.append(". È un ricordo davvero importante che conserverò sempre.");
+        return sb.toString();
     }
 
     /**
@@ -382,5 +429,19 @@ public class IrisServlet extends HttpServlet {
             resp.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
             resp.getWriter().write("{\"error\":\"Iris non e' raggiungibile in questo momento. Riprova tra poco.\"}");
         }
+    }
+
+    /**
+     * Helper per verificare se il testo inviato e' solo l'etichetta del tema cliccato dall'utente.
+     */
+    private static boolean isThemeLabel(String text) {
+        if (text == null) return false;
+        String t = text.trim();
+        return t.equalsIgnoreCase("Una persona di famiglia") ||
+                t.equalsIgnoreCase("Un momento speciale") ||
+                t.equalsIgnoreCase("Un luogo importante") ||
+                t.equalsIgnoreCase("Una tradizione o ricetta") ||
+                t.equalsIgnoreCase("Un oggetto con una storia") ||
+                t.equalsIgnoreCase("Racconto libero");
     }
 }

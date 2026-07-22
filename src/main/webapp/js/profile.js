@@ -92,6 +92,7 @@ function renderRelatives(p) {
     });
 }
 
+
 /* Personalità generata da Iris (backend) */
 async function loadPersonality(memberId) {
     try {

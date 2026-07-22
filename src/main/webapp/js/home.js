@@ -87,7 +87,7 @@ function renderPost(m) {
             ${renderAvatar(m.authorName, m.authorAvatarMediaId)}
             <div>
                 <div class="post-author">${m.authorName}</div>
-                <div class="post-meta">${formatDateTime(m.createdAt)}</div>
+                <div class="post-meta">Data di pubblicazione: ${formatDateTime(m.createdAt)}</div>
             </div>
         </div>
         ${m.title ? `<div class="post-title">${escapeHtml(m.title)}</div>` : ''}

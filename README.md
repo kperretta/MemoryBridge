@@ -23,15 +23,19 @@ Corso di Interazione Uomo-Macchina — A.A. 2025/2026
 Modifiche a HTML/CSS/JS → reload del browser è sufficiente.
 Modifiche al codice Java → `Ctrl+F9` per ricompilare, poi ricarica.
 
+**Nota sulle funzionalità AI:**
+L'applicazione include un sistema di fallback automatico in Modalità Demo. Se la variabile d'ambiente GROQ_API_KEY non è configurata o se il servizio non è raggiungibile, Iris risponderà con messaggi simulati per consentire il test completo dell'interfaccia e dei flussi UX.
+Per **abilitare l'AI reale**: Configurare la variabile d'ambiente GROQ_API_KEY con la propria chiave Groq nelle configurazioni di avvio di IntelliJ (Run -> Edit Configurations -> Environment Variables).
+
 ## Credenziali demo
 
 I dati vengono popolati in memoria a ogni avvio del server.
 
-| Utente | Email | Password | Ruolo |
-|--------|-------|----------|-------|
-| Maria Rossi (78) | `maria@test.it` | `password` | Custode dei ricordi |
-| Marco Rossi (50) | `marco@test.it` | `password` | Ponte tra generazioni |
-| Sofia Rossi (17) | `sofia@test.it` | `password` | Erede della memoria |
+| Utente | Email | Password | 
+|--------|-------|----------|
+| Maria Rossi (78) | `maria@test.it` | `password` | 
+| Marco Rossi (50) | `marco@test.it` | `password` | 
+| Sofia Rossi (17) | `sofia@test.it` | `password` | 
 
 Famiglia: `ROSSI2025`
 
@@ -41,7 +45,7 @@ Famiglia: `ROSSI2025`
 src/main/
 ├── java/com/memorybridge/
 │   ├── model/         → POJO (User, Memory, FamilyMember, Comment)
-│   ├── data/          → DataStore singleton (il "DB")
+│   ├── data/          → DataStore singleton (il "Database")
 │   ├── listener/      → AppInitListener (seed dati)
 │   ├── servlet/       → un servlet per risorsa REST
 │   └── util/          → JsonUtil (Gson con LocalDateTime)

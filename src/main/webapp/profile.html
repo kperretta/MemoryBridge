@@ -10,7 +10,11 @@
 <div id="navbar-slot"></div>
 
 <main class="container">
-    <a href="tree.html" class="text-muted" style="font-size:15px">← Torna all'albero</a>
+    <div class="flex-row" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+        <a href="tree.html" class="text-muted" style="font-size:15px">← Torna all'albero</a>
+        <!-- Mostrato via JS solo se questo è il profilo dell'utente loggato -->
+        <button class="big-btn outline hidden" id="edit-profile-btn">✏ Modifica profilo</button>
+    </div>
 
     <!-- Dati personali in alto -->
     <div class="card mt-2" id="profile-card">
@@ -44,6 +48,61 @@
             <button class="modal-close" onclick="closeMemoryModal()">×</button>
         </div>
         <div id="memory-body"></div>
+    </div>
+</div>
+
+<!-- Modal modifica profilo (solo per il proprietario) -->
+<div class="modal-backdrop hidden" id="member-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 id="modal-title">Modifica profilo</h2>
+            <button class="modal-close" onclick="closeMemberModal()">×</button>
+        </div>
+        <p class="text-muted" id="relation-hint" style="margin-bottom:12px"></p>
+        <form id="member-form">
+            <input type="hidden" id="member-id">
+            <div class="form-group">
+                <label for="m-firstName">Nome</label>
+                <input type="text" id="m-firstName" required>
+            </div>
+            <div class="form-group">
+                <label for="m-lastName">Cognome</label>
+                <input type="text" id="m-lastName" required>
+            </div>
+            <div class="form-group">
+                <label for="m-gender">Genere</label>
+                <select id="m-gender">
+                    <option value="F">Femmina</option>
+                    <option value="M">Maschio</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="m-birthDate">Data di nascita</label>
+                <input type="date" id="m-birthDate">
+            </div>
+            <div class="form-group">
+                <label for="m-deathDate">Data di morte <span class="text-muted">(vuota se vivente)</span></label>
+                <input type="date" id="m-deathDate">
+            </div>
+            <div class="form-group">
+                <label for="m-birthPlace">Luogo di nascita</label>
+                <input type="text" id="m-birthPlace">
+            </div>
+            <div class="form-group">
+                <label for="m-description">Descrizione</label>
+                <textarea id="m-description" placeholder="Racconta brevemente chi è questa persona…"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="m-photo">Foto profilo</label>
+                <input type="file" id="m-photo" accept="image/*">
+                <div id="m-photo-preview" class="mt-1"></div>
+            </div>
+            <div id="member-error" class="error-message hidden"></div>
+            <div class="modal-actions">
+                <button type="button" class="big-btn outline" onclick="closeMemberModal()">Annulla</button>
+                <button type="submit" class="big-btn primary">Salva</button>
+            </div>
+        </form>
     </div>
 </div>
 

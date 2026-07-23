@@ -1,6 +1,8 @@
 /* T4 - Profilo: dati, familiari stretti, personalità Iris, timeline verticale */
 
 let allMembers = [];
+let currentPerson = null;
+let isOwnProfile = false;
 
 (async function init() {
     await requireAuth();
@@ -20,6 +22,14 @@ let allMembers = [];
             api.get('/api/tree')
         ]);
         allMembers = tree;
+        currentPerson = person;
+
+        // Il bottone "Modifica profilo" compare solo se questo è il profilo
+        // dell'utente attualmente loggato (aperto dalla navbar), non quando
+        // si sta consultando il profilo di un altro familiare.
+        isOwnProfile = !!(window.currentUser && window.currentUser.familyMemberId === memberId);
+        document.getElementById('edit-profile-btn').classList.toggle('hidden', !isOwnProfile);
+
         renderProfile(person);
         renderRelatives(person);
         renderTimeline(memories);
@@ -66,7 +76,7 @@ function renderRelatives(p) {
 
     // Fratelli: stessi genitori (almeno uno in comune), escluso se stesso
     allMembers.filter(m => m.id !== p.id &&
-            ((p.motherId && m.motherId === p.motherId) || (p.fatherId && m.fatherId === p.fatherId)))
+        ((p.motherId && m.motherId === p.motherId) || (p.fatherId && m.fatherId === p.fatherId)))
         .forEach(m => rels.push({ m, role: m.gender === 'F' ? 'Sorella' : 'Fratello' }));
 
     if (rels.length === 0) {
@@ -92,6 +102,87 @@ function renderRelatives(p) {
     });
 }
 
+/* ===== Modifica profilo (solo proprietario) ===== */
+document.getElementById('edit-profile-btn').addEventListener('click', () => {
+    if (!isOwnProfile || !currentPerson) return;
+    openEditModal(currentPerson);
+});
+
+function openEditModal(p) {
+    document.getElementById('modal-title').textContent = 'Modifica profilo';
+    document.getElementById('relation-hint').textContent = '';
+    document.getElementById('member-id').value = p.id;
+    document.getElementById('m-firstName').value = p.firstName || '';
+    document.getElementById('m-lastName').value = p.lastName || '';
+    document.getElementById('m-gender').value = p.gender || 'F';
+    document.getElementById('m-birthDate').value = p.birthDate || '';
+    document.getElementById('m-deathDate').value = p.deathDate || '';
+    document.getElementById('m-birthPlace').value = p.birthPlace || '';
+    document.getElementById('m-description').value = p.description || '';
+    document.getElementById('m-photo').value = '';
+    document.getElementById('m-photo-preview').innerHTML = p.mediaId
+        ? `<img src="api/media?id=${p.mediaId}" style="max-width:100px;border-radius:8px;margin-top:8px">`
+        : '';
+    document.getElementById('member-error').classList.add('hidden');
+    document.getElementById('member-modal').classList.remove('hidden');
+}
+
+function closeMemberModal() {
+    document.getElementById('member-modal').classList.add('hidden');
+}
+window.closeMemberModal = closeMemberModal;
+
+document.getElementById('m-photo').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    const preview = document.getElementById('m-photo-preview');
+    if (!file) { preview.innerHTML = ''; return; }
+    const r = new FileReader();
+    r.onload = ev => preview.innerHTML = `<img src="${ev.target.result}" style="max-width:100px;border-radius:8px;margin-top:8px">`;
+    r.readAsDataURL(file);
+});
+
+document.getElementById('member-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!isOwnProfile || !currentPerson) return;
+
+    const photoFile = document.getElementById('m-photo').files[0];
+    const body = {
+        id: currentPerson.id,
+        firstName: document.getElementById('m-firstName').value.trim(),
+        lastName: document.getElementById('m-lastName').value.trim(),
+        gender: document.getElementById('m-gender').value,
+        birthDate: document.getElementById('m-birthDate').value || null,
+        deathDate: document.getElementById('m-deathDate').value || null,
+        birthPlace: document.getElementById('m-birthPlace').value.trim(),
+        description: document.getElementById('m-description').value.trim(),
+        // Le relazioni non si toccano da qui: si modificano solo dall'albero.
+        motherId: currentPerson.motherId,
+        fatherId: currentPerson.fatherId,
+        spouseId: currentPerson.spouseId,
+        mediaId: currentPerson.mediaId
+    };
+
+    try {
+        if (photoFile) {
+            const fd = new FormData();
+            fd.append('file', photoFile);
+            const r = await fetch('api/media', { method: 'POST', credentials: 'include', body: fd });
+            if (!r.ok) throw new Error('Upload foto fallito');
+            const { id: mediaId } = await r.json();
+            body.mediaId = mediaId;
+        }
+
+        const saved = await api.put('/api/tree', body);
+        currentPerson = saved;
+        renderProfile(saved);
+        closeMemberModal();
+        toast('Profilo aggiornato');
+    } catch (err) {
+        const el = document.getElementById('member-error');
+        el.textContent = 'Errore: ' + err.message;
+        el.classList.remove('hidden');
+    }
+});
 
 /* Personalità generata da Iris (backend) */
 async function loadPersonality(memberId) {

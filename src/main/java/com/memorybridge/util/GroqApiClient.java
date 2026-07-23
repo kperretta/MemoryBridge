@@ -23,7 +23,7 @@ public class GroqApiClient {
 
     private static final String API_URL = "https://api.groq.com/openai/v1/chat/completions";
     private static final String API_KEY = System.getenv("GROQ_API_KEY");
-    private static final String MODEL = "llama-3.1-8b-instant";
+    private static final String MODEL = "openai/gpt-oss-20b";
     private static final String VOICE_PLACEHOLDER = "[risposta vocale dell'utente, contenuto non trascritto]";
 
     private static final HttpClient CLIENT = HttpClient.newBuilder()

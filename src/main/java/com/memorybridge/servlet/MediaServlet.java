@@ -21,12 +21,7 @@ import java.io.IOException;
  *
  * NOTA: i file sono tenuti in RAM (nel DataStore). Non c'e' persistenza
  * su disco: al riavvio di Tomcat scompaiono con tutti gli altri dati, e
- * gli id ripartono da 1. Per questo NON usiamo cache "immutable" a lungo
- * termine: lo stesso id puo' corrispondere a un file diverso dopo un
- * riavvio, e un browser che avesse gia' in cache "id=7" mostrerebbe la
- * foto sbagliata (vecchio contenuto) senza mai richiederla di nuovo al
- * server. Con "no-cache" il browser rivalida sempre con il server prima
- * di riusare il contenuto in cache, evitando foto "fantasma".
+ * gli id ripartono da 1.
  */
 @WebServlet("/api/media")
 @MultipartConfig(

@@ -322,7 +322,7 @@ function showPostSaveChoice() {
             <p class="text-muted mb-2">Ora fa parte della storia della tua famiglia.<br>Cosa vuoi fare adesso?</p>
             <div style="display:flex;flex-direction:column;gap:12px;margin-top:20px">
                 <button class="big-btn primary full" id="another-memory-btn">Racconta un altro ricordo</button>
-                <button class="big-btn secondary full" id="go-home-btn">Torna alla Home</button>
+                <button class="big-btn secondary full" id="go-home-btn">Vai al ricordo appena raccolto</button>
             </div>
         </div>
     `;

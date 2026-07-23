@@ -105,6 +105,7 @@ public class MemoryServlet extends HttpServlet {
             resp.getWriter().write("{\"error\":\"Il titolo è obbligatorio\"}");
             return;
         }
+        /*
         if (incoming.getMediaId() == null) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             resp.getWriter().write("{\"error\":\"Devi allegare un contenuto (audio, video o foto)\"}");
@@ -114,7 +115,7 @@ public class MemoryServlet extends HttpServlet {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             resp.getWriter().write("{\"error\":\"Contenuto multimediale non trovato\"}");
             return;
-        }
+        } */
         if (incoming.getTaggedPersonId() == null) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             resp.getWriter().write("{\"error\":\"Scegli il protagonista del ricordo\"}");

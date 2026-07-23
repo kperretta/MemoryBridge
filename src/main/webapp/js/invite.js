@@ -1,6 +1,18 @@
-/* T6 - Invita un familiare: flusso "già nell'albero?" -> seleziona o crea -> link */
+/* T6 - Invita un familiare: flusso "già nell'albero?" -> seleziona o (rispetto a chi + relazione) -> link */
+
+const RELATIONS = [
+    { id: 'mother',  label: 'Madre' },
+    { id: 'father',  label: 'Padre' },
+    { id: 'spouse',  label: 'Coniuge' },
+    { id: 'brother', label: 'Fratello' },
+    { id: 'sister',  label: 'Sorella' },
+    { id: 'son',     label: 'Figlio' },
+    { id: 'daughter',label: 'Figlia' }
+];
 
 let treeMembers = [];
+let relationTarget = null;
+let pendingRelation = null;
 
 (async function init() {
     await requireAuth();
@@ -27,11 +39,20 @@ document.getElementById('inv-yes-btn').addEventListener('click', () => {
     renderMemberList();
     invShowStep('inv-step-select');
 });
+
 document.getElementById('inv-no-btn').addEventListener('click', () => {
-    invShowStep('inv-step-form');
+    pendingRelation = null;
+    relationTarget = null;
+    if (treeMembers.length === 0) {
+        // Nessuno ancora nell'albero: niente rispetto a cui collegarsi, vado dritto al form
+        document.getElementById('inv-relation-hint').textContent = 'Sarà il primo membro dell\'albero.';
+        invShowStep('inv-step-form');
+    } else {
+        openTargetModal();
+    }
 });
 
-/* STEP 2a: lista membri selezionabili */
+/* STEP 2a: lista membri selezionabili (invito a persona già nell'albero) */
 function renderMemberList() {
     const list = document.getElementById('inv-member-list');
     list.innerHTML = '';
@@ -55,14 +76,71 @@ function renderMemberList() {
 
 async function generateInviteFor(member) {
     try {
-        const r = await api.post('/api/invite', {});
+        // Collego l'invito al nodo specifico scelto, cosi' chi si registra
+        // con questo codice potra' confermare direttamente la propria identita'.
+        const r = await api.post('/api/invite', { familyMemberId: member.id });
         showLinkStep(r.inviteCode, r.inviteLink, member);
     } catch (e) {
         alert('Errore: ' + e.message);
     }
 }
 
-/* STEP 2b: form nuovo familiare -> aggiungi all'albero -> genera link */
+/* STEP 2b: "rispetto a chi" (stesso schema del picker relazione dell'albero) */
+function makePickerCard(m, onClick) {
+    const card = document.createElement('div');
+    card.className = 'picker-card';
+    const photoHtml = m.mediaId
+        ? `<div class="tree-node-photo" style="overflow:hidden;padding:0"><img src="api/media?id=${m.mediaId}" style="width:100%;height:100%;object-fit:cover"></div>`
+        : `<div class="tree-node-photo">${initials(m.firstName + ' ' + m.lastName)}</div>`;
+    card.innerHTML = `
+        ${photoHtml}
+        <div class="tree-node-name">${m.firstName} ${m.lastName}</div>
+    `;
+    card.addEventListener('click', onClick);
+    return card;
+}
+
+function openTargetModal() {
+    const grid = document.getElementById('target-grid');
+    grid.innerHTML = '';
+    treeMembers.forEach(m => {
+        grid.appendChild(makePickerCard(m, () => {
+            relationTarget = m;
+            closeTargetModal();
+            openRelationModal(m);
+        }));
+    });
+    document.getElementById('target-modal').classList.remove('hidden');
+}
+function closeTargetModal() { document.getElementById('target-modal').classList.add('hidden'); }
+window.closeTargetModal = closeTargetModal;
+
+function openRelationModal(target) {
+    document.getElementById('relation-target-name').textContent = target.firstName;
+    const grid = document.getElementById('relation-grid');
+    grid.innerHTML = '';
+    RELATIONS.forEach(r => {
+        const b = document.createElement('button');
+        b.className = 'relation-btn';
+        b.textContent = r.label;
+        b.onclick = () => {
+            pendingRelation = { relation: r.id, targetId: target.id };
+            closeRelationModal();
+            document.getElementById('inv-member-form').reset();
+            document.getElementById('inv-relation-hint').textContent =
+                `Stai aggiungendo: ${r.label} di ${target.firstName} ${target.lastName}. Il collegamento all'albero sarà automatico.`;
+            if (['mother', 'sister', 'daughter'].includes(r.id)) document.getElementById('inv-gender').value = 'F';
+            if (['father', 'brother', 'son'].includes(r.id)) document.getElementById('inv-gender').value = 'M';
+            invShowStep('inv-step-form');
+        };
+        grid.appendChild(b);
+    });
+    document.getElementById('relation-modal').classList.remove('hidden');
+}
+function closeRelationModal() { document.getElementById('relation-modal').classList.add('hidden'); }
+window.closeRelationModal = closeRelationModal;
+
+/* STEP 2b (continua): form nuovo familiare -> aggiungi all'albero (con relazione) -> genera link */
 document.getElementById('inv-member-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const body = {
@@ -72,9 +150,13 @@ document.getElementById('inv-member-form').addEventListener('submit', async (e) 
         birthDate: document.getElementById('inv-birthDate').value || null
     };
     try {
+        if (pendingRelation) applyRelationToNewMember(body, pendingRelation);
         const saved = await api.post('/api/tree', body);
+        if (pendingRelation) await applyRelationToTarget(saved, pendingRelation);
+
         toast(`${saved.firstName} aggiunto all'albero`);
-        const r = await api.post('/api/invite', {});
+        // L'invito resta collegato al nodo appena creato per lui/lei.
+        const r = await api.post('/api/invite', { familyMemberId: saved.id });
         showLinkStep(r.inviteCode, r.inviteLink, saved);
     } catch (err) {
         const el = document.getElementById('inv-form-error');
@@ -82,6 +164,54 @@ document.getElementById('inv-member-form').addEventListener('submit', async (e) 
         el.classList.remove('hidden');
     }
 });
+
+/** Stessa logica di tree.js: imposta i legami sul NUOVO membro in base alla relazione col target */
+function applyRelationToNewMember(newBody, rel) {
+    const target = treeMembers.find(m => m.id === rel.targetId);
+    if (!target) return;
+
+    switch (rel.relation) {
+        case 'son':
+        case 'daughter':
+            if (target.gender === 'F') newBody.motherId = target.id;
+            else newBody.fatherId = target.id;
+            if (target.spouseId) {
+                const spouse = treeMembers.find(m => m.id === target.spouseId);
+                if (spouse) {
+                    if (spouse.gender === 'F') newBody.motherId = spouse.id;
+                    else newBody.fatherId = spouse.id;
+                }
+            }
+            break;
+        case 'brother':
+        case 'sister':
+            newBody.motherId = target.motherId || null;
+            newBody.fatherId = target.fatherId || null;
+            break;
+        case 'spouse':
+            newBody.spouseId = target.id;
+            break;
+        // mother/father: il legame va sul TARGET, non sul nuovo (fatto dopo)
+    }
+}
+
+/** Stessa logica di tree.js: aggiorna il nodo TARGET quando serve (madre, padre, coniuge) */
+async function applyRelationToTarget(savedNew, rel) {
+    const target = treeMembers.find(m => m.id === rel.targetId);
+    if (!target) return;
+
+    let needsUpdate = false;
+    const targetUpdate = { ...target };
+
+    switch (rel.relation) {
+        case 'mother': targetUpdate.motherId = savedNew.id; needsUpdate = true; break;
+        case 'father': targetUpdate.fatherId = savedNew.id; needsUpdate = true; break;
+        case 'spouse': targetUpdate.spouseId = savedNew.id; needsUpdate = true; break;
+    }
+    if (needsUpdate) {
+        await api.put('/api/tree', targetUpdate);
+    }
+}
 
 /* STEP 3: mostra link + condivisione */
 function showLinkStep(code, link, member) {

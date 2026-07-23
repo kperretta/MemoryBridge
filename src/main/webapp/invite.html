@@ -5,6 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Memory Bridge - Invita un familiare</title>
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        .picker-grid {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            padding: 16px 0;
+        }
+        .picker-card {
+            cursor: pointer;
+            border: 2px solid transparent;
+            border-radius: 10px;
+            padding: 6px;
+            text-align: center;
+            transition: border-color 0.15s, background 0.15s;
+        }
+        .picker-card:hover { border-color: var(--primary-light); }
+        .picker-card.selected { border-color: var(--primary); background: var(--primary-light); }
+    </style>
 </head>
 <body>
 <div id="navbar-slot"></div>
@@ -35,11 +53,11 @@
         </div>
     </section>
 
-    <!-- STEP 2b: form nuovo familiare -->
+    <!-- STEP 2b: form nuovo familiare (raggiunto dopo aver scelto rispetto a chi e con quale relazione) -->
     <section id="inv-step-form" class="hidden">
         <div class="card">
             <h3>Aggiungi il nuovo familiare</h3>
-            <p class="text-muted mb-2">Verrà inserito nell'albero e riceverà il link di invito.</p>
+            <p class="text-muted mb-2" id="inv-relation-hint">Verrà inserito nell'albero e riceverà il link di invito.</p>
             <form id="inv-member-form">
                 <div class="form-group">
                     <label for="inv-firstName">Nome</label>
@@ -99,6 +117,28 @@
             <button class="btn btn-outline btn-block mt-2" onclick="window.location.href='home.html'">Torna alla Home</button>
         </div>
     </section>
+
+    <!-- Picker: rispetto a chi vuoi collegare il nuovo familiare -->
+    <div class="modal-backdrop hidden" id="target-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Rispetto a chi vuoi aggiungerlo/a?</h2>
+                <button class="modal-close" onclick="closeTargetModal()">×</button>
+            </div>
+            <div id="target-grid" class="picker-grid"></div>
+        </div>
+    </div>
+
+    <!-- Picker: che relazione ha con la persona scelta -->
+    <div class="modal-backdrop hidden" id="relation-modal">
+        <div class="modal" style="max-width:420px">
+            <div class="modal-header">
+                <h2>Che relazione ha con <span id="relation-target-name"></span>?</h2>
+                <button class="modal-close" onclick="closeRelationModal()">×</button>
+            </div>
+            <div class="relation-grid" id="relation-grid"></div>
+        </div>
+    </div>
 </main>
 
 <script src="js/api.js"></script>

@@ -9,12 +9,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b36b1a15-c51e-4c3f-8a8d-6a46c344b8bf" name="Changes" comment="Risolto problema registrazione con link invito e aggiunta controlli form di registrazione">
+    <list default="true" id="b36b1a15-c51e-4c3f-8a8d-6a46c344b8bf" name="Changes" comment="aggiunta opzione &quot;Modifica profilo&quot;">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/webapp/create.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/create.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/webapp/js/create.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/js/create.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/webapp/js/upload.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/js/upload.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/webapp/upload.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/upload.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -78,24 +74,24 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "DefaultHtmlFileTemplate": "HTML File",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "Tomcat Server.Tomcat 11.0.4.executor": "Run",
-    "Tomcat Server.Tomcat 11.0.41.executor": "Run",
-    "git-widget-placeholder": "master",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/Users/ireneiuorio/Desktop/MemoryBridge/src/main/resources/demo-media",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "reference.settingsdialog.project.grazie",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;Tomcat Server.Tomcat 11.0.4.executor&quot;: &quot;Run&quot;,
+    &quot;Tomcat Server.Tomcat 11.0.41.executor&quot;: &quot;Run&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/ireneiuorio/Desktop/MemoryBridge/src/main/resources/demo-media&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.project.grazie&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/main/resources/demo-media" />
@@ -109,7 +105,7 @@
     </key>
   </component>
   <component name="RunManager">
-    <configuration name="Tomcat 11.0.41" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local" APPLICATION_SERVER_NAME="Tomcat 11.0.41" ALTERNATIVE_JRE_ENABLED="false" nameIsGenerated="true">
+    <configuration name="Tomcat 11.0.41" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local" APPLICATION_SERVER_NAME="Tomcat 11.0.4" ALTERNATIVE_JRE_ENABLED="false" nameIsGenerated="true">
       <option name="BROWSER_ID" value="98ca6316-2f89-46d9-a9e5-fa9e2b0625b3" />
       <option name="UPDATING_POLICY" value="restart-server" />
       <deployment>
@@ -244,6 +240,7 @@
       <workItem from="1784146304262" duration="3014000" />
       <workItem from="1784558846423" duration="2337000" />
       <workItem from="1784734811050" duration="6129000" />
+      <workItem from="1784804152851" duration="2103000" />
     </task>
     <task id="LOCAL-00001" summary=" Implementazione iniziale Memory Bridge">
       <option name="closed" value="true" />
@@ -429,7 +426,23 @@
       <option name="project" value="LOCAL" />
       <updated>1784801342670</updated>
     </task>
-    <option name="localTasksCounter" value="24" />
+    <task id="LOCAL-00024" summary="fix invito familiare non presente nell'albero (chiede parentela)">
+      <option name="closed" value="true" />
+      <created>1784805311444</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1784805311444</updated>
+    </task>
+    <task id="LOCAL-00025" summary="aggiunta opzione &quot;Modifica profilo&quot;">
+      <option name="closed" value="true" />
+      <created>1784806238465</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1784806238465</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -464,6 +477,8 @@
     <MESSAGE value="aggiunta mock in caso di assenza api key Groq" />
     <MESSAGE value="Risolto problema profilo" />
     <MESSAGE value="Risolto problema registrazione con link invito e aggiunta controlli form di registrazione" />
-    <option name="LAST_COMMIT_MESSAGE" value="Risolto problema registrazione con link invito e aggiunta controlli form di registrazione" />
+    <MESSAGE value="fix invito familiare non presente nell'albero (chiede parentela)" />
+    <MESSAGE value="aggiunta opzione &quot;Modifica profilo&quot;" />
+    <option name="LAST_COMMIT_MESSAGE" value="aggiunta opzione &quot;Modifica profilo&quot;" />
   </component>
 </project>

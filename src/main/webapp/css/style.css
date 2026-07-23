@@ -332,7 +332,7 @@ h3 { font-family: var(--font-display); font-size: 17px; font-weight: 600; margin
 }
 
 .msg-iris {
-    background: var(--primary-lighter);
+    background: #c0d8fb;
     color: var(--text);
     align-self: flex-start;
     border-bottom-left-radius: 6px;

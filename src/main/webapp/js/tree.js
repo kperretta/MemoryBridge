@@ -26,6 +26,9 @@ async function loadTree(highlightId) {
     renderTree(allMembers, highlightId);
 }
 
+/**
+ * Renderizza l'albero includendo visivamente anche i nodi fantasma
+ */
 function renderTree(members, highlightId) {
     const container = document.getElementById('tree');
     container.innerHTML = '';
@@ -61,19 +64,6 @@ function renderTree(members, highlightId) {
     requestAnimationFrame(drawConnectors);
 }
 
-/**
- * Calcola generazioni (righe) E ordine orizzontale in un unico passaggio
- * top-down:
- *  1. Il livello (riga) di ogni persona è dato dal grafo di parentela
- *     (madre/padre => livello-1, figlio => livello+1, coniuge => stesso
- *     livello), non dalla data di nascita.
- *  2. La posizione orizzontale di un figlio è ereditata dai suoi genitori
- *     (media delle loro posizioni), così un figlio di chi sta a sinistra
- *     nella riga sopra finisce a sinistra anche nella riga sotto. Chi entra
- *     in famiglia per matrimonio eredita invece la posizione del coniuge.
- * Il risultato è un array di generazioni, ciascuna già ordinata da sinistra
- * a destra in modo coerente con la riga precedente.
- */
 function computeOrderedGenerations(members) {
     const byId = new Map(members.map(m => [m.id, m]));
     const level = new Map();
@@ -116,14 +106,9 @@ function computeOrderedGenerations(members) {
     });
     const genArrays = generations.filter(Boolean);
 
-    // Posizione orizzontale definitiva di ciascuna persona, riempita
-    // generazione per generazione partendo dall'alto.
     const position = new Map();
 
     function pairSpousesArbitrarily(gen) {
-        // Usato solo per la generazione più in alto, dove non c'è un
-        // genitore da cui ereditare la posizione: ordino comunque tenendo
-        // i coniugi vicini, in modo stabile.
         const arr = [...gen].sort((a, b) => (a.birthDate || '').localeCompare(b.birthDate || ''));
         const result = [];
         const placed = new Set();
@@ -143,9 +128,6 @@ function computeOrderedGenerations(members) {
         const base = genIdx === 0 ? pairSpousesArbitrarily(gen) : gen;
         const provisional = new Map();
 
-        // Risolvo iterativamente: prima chi ha genitori già posizionati,
-        // poi chi eredita la posizione del coniuge, finché non c'è più
-        // nulla da risolvere.
         let pending = [...base];
         let changed = true;
         while (changed && pending.length) {
@@ -165,20 +147,15 @@ function computeOrderedGenerations(members) {
                     changed = true;
                     return false;
                 }
-                return true; // ancora irrisolto, resta in sospeso per il prossimo giro
+                return true;
             });
         }
 
-        // Chi resta (nessun genitore in questo albero, es. capostipiti o
-        // rami che si uniscono per matrimonio senza coniuge già risolto)
-        // mantiene l'ordine base, distanziato in modo da non collidere.
         pending.forEach(m => {
             const idx = base.indexOf(m);
             provisional.set(m.id, idx * 10);
         });
 
-        // Ordino la riga secondo la posizione calcolata; a parità, uso la
-        // data di nascita come criterio stabile.
         const ordered = [...gen].sort((a, b) => {
             const pa = provisional.get(a.id);
             const pb = provisional.get(b.id);
@@ -186,8 +163,6 @@ function computeOrderedGenerations(members) {
             return (a.birthDate || '').localeCompare(b.birthDate || '');
         });
 
-        // Fisso la posizione definitiva (con un piccolo offset crescente
-        // per disambiguare del tutto l'ordine, usata come chiave dai figli).
         ordered.forEach((m, i) => position.set(m.id, provisional.get(m.id) + i * 0.0001));
 
         genArrays[genIdx] = ordered;
@@ -198,8 +173,31 @@ function computeOrderedGenerations(members) {
 
 function renderNode(m, highlight) {
     const el = document.createElement('div');
-    el.className = 'tree-node' + (highlight ? ' new-highlight' : '');
     el.dataset.id = m.id;
+
+    // Se è un genitore fantasma, restituisce la card tratteggiata
+    if (m.phantom) {
+        el.className = 'tree-node phantom-node';
+        el.innerHTML = `
+            <div class="tree-node-photo" style="border: 2px dashed #a0a0a0; background: transparent; display:flex; align-items:center; justify-content:center;">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="2 2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </div>
+            <div class="tree-node-name">Genitore ignoto</div>
+            <div class="tree-node-dates" style="font-size: 0.75rem; opacity: 0.8;">(Non registrato)</div>
+        `;
+
+        el.addEventListener('click', () => {
+            openEditModal({ id: m.id, firstName: '', lastName: '', gender: 'M' });
+        });
+
+        return el;
+    }
+
+    // Nodo standard
+    el.className = 'tree-node' + (highlight ? ' new-highlight' : '');
     const photoHtml = m.mediaId
         ? `<div class="tree-node-photo" style="overflow:hidden;padding:0"><img src="api/media?id=${m.mediaId}" style="width:100%;height:100%;object-fit:cover"></div>`
         : `<div class="tree-node-photo">${initials(m.firstName + ' ' + m.lastName)}</div>`;
@@ -227,13 +225,11 @@ function renderNode(m, highlight) {
         <div class="tree-node-dates">${formatYearRange(m)}</div>
     `;
 
-    // Click sul nodo (non sulle icone) => apre la timeline/profilo
     el.addEventListener('click', (e) => {
         if (e.target.closest('.node-action')) return;
         window.location.href = `profile.html?id=${m.id}`;
     });
 
-    // Handler icone
     el.querySelectorAll('.node-action').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -266,11 +262,6 @@ function formatYearRange(m) {
     return y2 ? `${y1} – ${y2}` : `n. ${y1}`;
 }
 
-/**
- * Disegna le linee di parentela reali (genitore-figlio e coniuge-coniuge)
- * sovrapponendo un SVG al contenitore, posizionato in base alle coordinate
- * effettive dei nodi già renderizzati.
- */
 function drawConnectors() {
     const container = document.getElementById('tree');
     if (!container) return;
@@ -302,7 +293,6 @@ function drawConnectors() {
         };
     }
 
-    // Linee coniugali: un tratto orizzontale tra i due partner
     allMembers.forEach(m => {
         if (m.spouseId && m.id < m.spouseId) {
             const a = rectOf(m.id), b = rectOf(m.spouseId);
@@ -333,10 +323,7 @@ function drawConnectors() {
         svg.appendChild(line);
     }
 
-    // Linee genitore-figlio: un unico "bus" orizzontale per ogni gruppo di
-    // fratelli (stessa coppia di genitori), largo solo quanto i suoi figli,
-    // così famiglie diverse nella stessa riga non si sovrappongono più.
-    const familyGroups = new Map(); // "motherId-fatherId" -> [children]
+    const familyGroups = new Map();
     allMembers.forEach(child => {
         if (!child.motherId && !child.fatherId) return;
         const key = (child.motherId || 0) + '-' + (child.fatherId || 0);
@@ -353,12 +340,18 @@ function drawConnectors() {
         const sample = children[0];
         const parentIds = [sample.motherId, sample.fatherId].filter(Boolean);
         const parentRects = parentIds.map(rectOf).filter(Boolean);
-        if (parentRects.length === 0) return;
 
-        const parentX = parentRects.reduce((s, p) => s + p.centerX, 0) / parentRects.length;
-        const parentY = Math.max(...parentRects.map(p => p.bottom));
-        const childTop = Math.min(...childRects.map(c => c.top));
         const childXs = childRects.map(c => c.centerX);
+        const childTop = Math.min(...childRects.map(c => c.top));
+
+        let parentX, parentY;
+        if (parentRects.length > 0) {
+            parentX = parentRects.reduce((s, p) => s + p.centerX, 0) / parentRects.length;
+            parentY = Math.max(...parentRects.map(p => p.bottom));
+        } else {
+            parentX = childXs.reduce((a, b) => a + b, 0) / childXs.length;
+            parentY = childTop - 40;
+        }
 
         familyList.push({
             key,
@@ -371,10 +364,6 @@ function drawConnectors() {
         });
     });
 
-    // Raggruppo le famiglie per "riga" (stesso intervallo genitori -> figli,
-    // arrotondato per tollerare piccoli scarti di misura), poi alterno il
-    // livello di altezza del bus tra famiglie vicine ("cugine") nella
-    // stessa riga, così non finiscono più alla stessa quota.
     const gapGroups = new Map();
     familyList.forEach(f => {
         const gapKey = Math.round(f.parentY / 4) * 4;
@@ -393,18 +382,13 @@ function drawConnectors() {
     });
 
     familyList.forEach(f => {
-        // tronco dal punto medio dei genitori fino al bus
         addLine(f.parentX, f.parentY, f.parentX, f.busY);
-        // bus orizzontale, largo solo quanto serve per raggiungere i figli
         addLine(f.minX, f.busY, f.maxX, f.busY);
-        // discesa dal bus a ciascun figlio
         f.childRects.forEach(c => addLine(c.centerX, f.busY, c.centerX, c.top));
     });
 
     container.appendChild(svg);
 }
-
-
 
 /* ============ PICKER RELAZIONE ============ */
 function openRelationModal(target) {
@@ -437,7 +421,6 @@ function openAddFlow(relation) {
     const hint = document.getElementById('relation-hint');
     if (relation && selectedNode) {
         hint.textContent = `Stai aggiungendo: ${relation.label} di ${selectedNode.firstName} ${selectedNode.lastName}. Il collegamento all'albero sarà automatico.`;
-        // Pre-imposto il genere in base alla relazione
         if (['mother', 'sister', 'daughter'].includes(relation.id)) document.getElementById('m-gender').value = 'F';
         if (['father', 'brother', 'son'].includes(relation.id)) document.getElementById('m-gender').value = 'M';
     } else {
@@ -519,11 +502,8 @@ document.getElementById('member-form').addEventListener('submit', async (e) => {
             saved = await api.put('/api/tree', body);
             toast('Familiare aggiornato');
         } else {
-            // Collegamento automatico in base alla relazione scelta
             if (pendingRelation) applyRelationToNewMember(body, pendingRelation);
             saved = await api.post('/api/tree', body);
-
-            // Alcune relazioni richiedono di aggiornare anche il nodo esistente
             if (pendingRelation) await applyRelationToTarget(saved, pendingRelation);
             toast('Familiare aggiunto e collegato all\'albero');
         }
@@ -536,7 +516,6 @@ document.getElementById('member-form').addEventListener('submit', async (e) => {
     }
 });
 
-/** Imposta i legami sul NUOVO membro in base alla relazione col target */
 function applyRelationToNewMember(newBody, rel) {
     const target = allMembers.find(m => m.id === rel.targetId);
     if (!target) return;
@@ -544,10 +523,8 @@ function applyRelationToNewMember(newBody, rel) {
     switch (rel.relation) {
         case 'son':
         case 'daughter':
-            // Il nuovo è figlio/a del target
             if (target.gender === 'F') newBody.motherId = target.id;
             else newBody.fatherId = target.id;
-            // Se il target ha un coniuge, e' l'altro genitore
             if (target.spouseId) {
                 const spouse = allMembers.find(m => m.id === target.spouseId);
                 if (spouse) {
@@ -558,18 +535,19 @@ function applyRelationToNewMember(newBody, rel) {
             break;
         case 'brother':
         case 'sister':
-            // Stesso padre e stessa madre del target
-            newBody.motherId = target.motherId || null;
-            newBody.fatherId = target.fatherId || null;
+            if (target.motherId || target.fatherId) {
+                newBody.motherId = target.motherId || null;
+                newBody.fatherId = target.fatherId || null;
+            } else {
+                newBody._siblingOf = target.id;
+            }
             break;
         case 'spouse':
             newBody.spouseId = target.id;
             break;
-        // mother/father: il legame va messo sul TARGET, non sul nuovo (fatto dopo)
     }
 }
 
-/** Aggiorna il nodo TARGET quando serve (madre, padre, coniuge) */
 async function applyRelationToTarget(savedNew, rel) {
     const target = allMembers.find(m => m.id === rel.targetId);
     if (!target) return;
@@ -579,13 +557,36 @@ async function applyRelationToTarget(savedNew, rel) {
 
     switch (rel.relation) {
         case 'mother':
-            targetUpdate.motherId = savedNew.id;
-            needsUpdate = true;
+        case 'father': {
+            const isMother = rel.relation === 'mother';
+            const phantom = target.fatherId
+                ? allMembers.find(m => m.id === target.fatherId && m.phantom)
+                : null;
+
+            if (phantom) {
+                if (isMother) {
+                    await api.put('/api/tree', {
+                        _phantomReplace: {
+                            phantomId: phantom.id,
+                            realParentId: savedNew.id,
+                            field: 'mother'
+                        }
+                    });
+                } else {
+                    await api.put('/api/tree', {
+                        _phantomReplace: {
+                            phantomId: phantom.id,
+                            realParentId: savedNew.id
+                        }
+                    });
+                }
+                needsUpdate = false;
+            } else {
+                targetUpdate[isMother ? 'motherId' : 'fatherId'] = savedNew.id;
+                needsUpdate = true;
+            }
             break;
-        case 'father':
-            targetUpdate.fatherId = savedNew.id;
-            needsUpdate = true;
-            break;
+        }
         case 'spouse':
             targetUpdate.spouseId = savedNew.id;
             needsUpdate = true;

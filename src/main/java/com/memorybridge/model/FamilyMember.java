@@ -2,8 +2,12 @@ package com.memorybridge.model;
 
 /**
  * Nodo dell'albero genealogico. Un FamilyMember può o meno corrispondere
- * a un User registrato (es. i bisnonni sono nell'albero ma non hanno un account).
+ * a un User registrato.
  * Le relazioni sono modellate con motherId, fatherId, spouseId.
+ *
+ * Un FamilyMember può anche essere un nodo "fantasma": un'ancora interna,
+ * creata automaticamente quando si aggiunge un fratello/sorella a qualcuno
+ * di cui non sono ancora stati registrati i genitori.
  */
 public class FamilyMember {
     private Long id;
@@ -21,6 +25,8 @@ public class FamilyMember {
     private String familyCode;     // a quale famiglia appartiene
     private Long mediaId;          // foto profilo del membro
     private Long userId;           // se questo nodo corrisponde a un User registrato, il suo id
+    private boolean phantom = false; // Nodo fantasma (genitore "ancora" per fratelli orfani)
+    private Long phantomForId;     // id del membro "reale" per cui è stato creato la prima volta
 
     public FamilyMember() {}
 
@@ -80,6 +86,12 @@ public class FamilyMember {
 
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }
+
+    public boolean isPhantom() { return phantom; }
+    public void setPhantom(boolean phantom) { this.phantom = phantom; }
+
+    public Long getPhantomForId() { return phantomForId; }
+    public void setPhantomForId(Long phantomForId) { this.phantomForId = phantomForId; }
 
     public String getFullName() { return firstName + " " + lastName; }
 }

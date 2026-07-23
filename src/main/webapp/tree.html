@@ -20,6 +20,23 @@
         }
         .generation { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
         .connector { width: 3px; height: 30px; background: var(--primary-light); margin: 0 auto; }
+        /* ===== STILE NODO FANTASMA ===== */
+        .tree-node.phantom-node {
+            border: 2px dashed var(--primary-light, #a0a0a0);
+            background-color: rgba(0, 0, 0, 0.03);
+            opacity: 0.75;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .tree-node.phantom-node:hover {
+            opacity: 1;
+            border-style: solid;
+            background-color: rgba(0, 0, 0, 0.06);
+        }
+        .tree-node.phantom-node .tree-node-name {
+            font-style: italic;
+            color: var(--text-muted, #777);
+        }
     </style>
 </head>
 <body>

@@ -102,7 +102,84 @@ public class DataStore {
             if (id.equals(m.getFatherId())) m.setFatherId(null);
             if (id.equals(m.getSpouseId())) m.setSpouseId(null);
         });
+        cleanupOrphanPhantoms();
         return true;
+    }
+
+    // ---- Nodi fantasma (genitore-ancora per fratelli orfani) ----
+
+    /**
+     * Restituisce il fantasma già associato a memberId, se esiste, altrimenti
+     * ne crea uno nuovo. Usato solo la prima volta che due fratelli senza
+     * genitori registrati vengono collegati fra loro: le aggiunte successive
+     * riusano semplicemente il fatherId (già valorizzato col fantasma) copiato
+     * dal fratello target, senza richiamare questo metodo.
+     */
+    public FamilyMember getOrCreatePhantomParent(String familyCode, Long memberId) {
+        return familyMembers.values().stream()
+                .filter(m -> familyCode.equals(m.getFamilyCode())
+                        && m.isPhantom()
+                        && memberId.equals(m.getPhantomForId()))
+                .findFirst()
+                .orElseGet(() -> {
+                    FamilyMember phantom = new FamilyMember();
+                    phantom.setFamilyCode(familyCode);
+                    phantom.setPhantom(true);
+                    phantom.setPhantomForId(memberId);
+                    phantom.setFirstName("_phantom_");
+                    phantom.setLastName("");
+                    return addFamilyMember(phantom);
+                });
+    }
+
+    /**
+     * Sostituisce integralmente un genitore fantasma con un genitore reale:
+     * tutti i membri che avevano quel fantasma in motherId o fatherId vengono
+     * aggiornati con realParentId, poi il fantasma viene eliminato.
+     */
+    public void replacePhantomParent(Long phantomId, Long realParentId) {
+        if (phantomId == null) return;
+        FamilyMember phantom = familyMembers.get(phantomId);
+        if (phantom == null || !phantom.isPhantom()) return;
+
+        familyMembers.values().forEach(m -> {
+            if (phantomId.equals(m.getFatherId())) m.setFatherId(realParentId);
+            if (phantomId.equals(m.getMotherId())) m.setMotherId(realParentId);
+        });
+        familyMembers.remove(phantomId);
+    }
+
+    /**
+     * Propaga un genitore reale appena aggiunto (tipicamente la madre,
+     * mentre il padre resta ancora un fantasma) a tutti i fratelli che
+     * condividono lo stesso fantasma, assumendo che siano fratelli "pieni".
+     * Il fantasma NON viene rimosso: resta come ancora per il genitore
+     * ancora sconosciuto.
+     */
+    public void propagateNewParentToPhantomSiblings(Long phantomId, String field, Long realParentId) {
+        if (phantomId == null) return;
+        FamilyMember phantom = familyMembers.get(phantomId);
+        if (phantom == null || !phantom.isPhantom()) return;
+
+        familyMembers.values().forEach(m -> {
+            boolean condividePhantom = phantomId.equals(m.getFatherId()) || phantomId.equals(m.getMotherId());
+            if (!condividePhantom) return;
+            if ("mother".equals(field)) {
+                m.setMotherId(realParentId);
+            } else {
+                m.setFatherId(realParentId);
+            }
+        });
+    }
+
+    /** Rimuove i nodi fantasma che nessun figlio referenzia più (es. dopo eliminazioni). */
+    private void cleanupOrphanPhantoms() {
+        Set<Long> referenced = new HashSet<>();
+        familyMembers.values().forEach(m -> {
+            if (m.getMotherId() != null) referenced.add(m.getMotherId());
+            if (m.getFatherId() != null) referenced.add(m.getFatherId());
+        });
+        familyMembers.values().removeIf(m -> m.isPhantom() && !referenced.contains(m.getId()));
     }
 
     // ==================== MEMORIES ====================
@@ -146,19 +223,9 @@ public class DataStore {
     }
 
     // ==================== LIKES ====================
-    // memoryId -> (userId -> Like). La mappa interna per userId garantisce che un
-    // utente non possa mettere like due volte allo stesso ricordo, e rende il
-    // toggle/lookup O(1) senza dover scorrere una lista.
     private final Map<Long, Map<Long, Like>> likesByMemory = new ConcurrentHashMap<>();
     private final AtomicLong likeSeq = new AtomicLong(0);
 
-    /**
-     * Alterna il like di un utente su un ricordo: se non l'aveva ancora messo lo
-     * aggiunge, se ce l'aveva lo toglie (comportamento "toggle" tipico dei social).
-     *
-     * @return true se dopo la chiamata il ricordo risulta "piaciuto" da quell'utente,
-     *         false se il like è appena stato rimosso.
-     */
     public boolean toggleLike(Long memoryId, Long userId) {
         if (memoryId == null || userId == null) return false;
         Map<Long, Like> forMemory = likesByMemory.computeIfAbsent(memoryId, k -> new ConcurrentHashMap<>());

@@ -8,13 +8,11 @@ function renderNavbar(activeSection) {
 
     const user = window.currentUser;
     const name = user ? user.firstName : '';
-    // IMPORTANTE: per il profilo serve l'ID del FamilyMember (nodo dell'albero),
-    // non l'ID dello User. L'endpoint /api/tree?id=... si aspetta un familyMemberId.
     const memberId = user ? user.familyMemberId : null;
 
     // Badge nome: tre stati possibili
     //  1. utente collegato a un nodo → link al profilo
-    //  2. utente non ancora collegato → link a link-member.html (fallback UX)
+    //  2. utente non ancora collegato → link a link-member.html
     //  3. nessun utente → niente
     let userBadge = '';
     if (name && memberId) {
@@ -31,10 +29,10 @@ function renderNavbar(activeSection) {
             </a>
             <div class="nav-links">
                 <a href="home.html" class="${activeSection === 'home' ? 'active' : ''}">Home</a>
-                <a href="chat.html" class="${activeSection === 'chat' ? 'active' : ''}">Racconta</a>
-                <a href="create.html" class="${activeSection === 'create' ? 'active' : ''}">Crea contenuto</a>
-                <a href="tree.html" class="${activeSection === 'tree' ? 'active' : ''}">Albero</a>
-                <a href="invite.html" class="${activeSection === 'invite' ? 'active' : ''}">Invita</a>
+                <a href="chat.html" class="${activeSection === 'chat' ? 'active' : ''}">Racconta un ricordo</a>
+                <a href="create.html" class="${activeSection === 'create' ? 'active' : ''}">Crea un contenuto</a>
+                <a href="tree.html" class="${activeSection === 'tree' ? 'active' : ''}">Albero Genealogico</a>
+                <a href="invite.html" class="${activeSection === 'invite' ? 'active' : ''}">Invita un familiare</a>
 
                 ${userBadge}
 

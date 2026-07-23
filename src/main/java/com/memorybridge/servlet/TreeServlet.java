@@ -1,5 +1,6 @@
 package com.memorybridge.servlet;
 
+import com.google.gson.JsonObject;
 import com.memorybridge.data.DataStore;
 import com.memorybridge.model.FamilyMember;
 import com.memorybridge.util.JsonUtil;
@@ -12,8 +13,14 @@ import java.util.List;
 /**
  * GET  /api/tree           → tutti i nodi dell'albero della famiglia dell'utente
  * GET  /api/tree?id=X      → singolo membro
- * POST /api/tree           → aggiungi nuovo membro (body JSON)
- * PUT  /api/tree           → modifica membro esistente (body JSON con id)
+ * POST /api/tree           → aggiungi nuovo membro (body JSON). Se il body contiene
+ *                            "_siblingOf": <id>, e il membro referenziato non ha
+ *                            ancora genitori registrati, viene creato/riusato un
+ *                            genitore fantasma comune per collegare i due fratelli.
+ * PUT  /api/tree           → modifica membro esistente (body JSON con id), oppure,
+ *                            se il body contiene "_phantomReplace", sostituisce/integra
+ *                            un genitore fantasma con uno reale su tutti i fratelli
+ *                            che lo condividono.
  */
 @WebServlet("/api/tree")
 public class TreeServlet extends HttpServlet {
@@ -43,6 +50,7 @@ public class TreeServlet extends HttpServlet {
             return;
         }
 
+        // Restituisco anche i nodi fantasma
         List<FamilyMember> tree = DataStore.get().familyTree(familyCode);
         resp.getWriter().write(JsonUtil.GSON.toJson(tree));
     }
@@ -60,9 +68,30 @@ public class TreeServlet extends HttpServlet {
         }
         String familyCode = (String) session.getAttribute("familyCode");
 
-        FamilyMember incoming = JsonUtil.GSON.fromJson(req.getReader(), FamilyMember.class);
+        JsonObject bodyJson = JsonUtil.GSON.fromJson(req.getReader(), JsonObject.class);
+        FamilyMember incoming = JsonUtil.GSON.fromJson(bodyJson, FamilyMember.class);
         incoming.setFamilyCode(familyCode);
+
         FamilyMember saved = DataStore.get().addFamilyMember(incoming);
+
+        // Caso "fratello/sorella orfano": il client segnala con _siblingOf
+        // l'id del fratello target quando questo non ha ancora
+        // motherId/fatherId. Creo (o riuso) un genitore fantasma comune e
+        // collego entrambi ad esso.
+        if (bodyJson.has("_siblingOf") && !bodyJson.get("_siblingOf").isJsonNull()) {
+            Long siblingOfId = bodyJson.get("_siblingOf").getAsLong();
+            FamilyMember sibling = DataStore.get().findFamilyMember(siblingOfId);
+            if (sibling != null && familyCode.equals(sibling.getFamilyCode())) {
+                FamilyMember phantom = DataStore.get().getOrCreatePhantomParent(familyCode, siblingOfId);
+
+                saved.setFatherId(phantom.getId());
+                DataStore.get().updateFamilyMember(saved);
+
+                sibling.setFatherId(phantom.getId());
+                DataStore.get().updateFamilyMember(sibling);
+            }
+        }
+
         resp.getWriter().write(JsonUtil.GSON.toJson(saved));
     }
 
@@ -109,7 +138,39 @@ public class TreeServlet extends HttpServlet {
         }
         String familyCode = (String) session.getAttribute("familyCode");
 
-        FamilyMember incoming = JsonUtil.GSON.fromJson(req.getReader(), FamilyMember.class);
+        JsonObject bodyJson = JsonUtil.GSON.fromJson(req.getReader(), JsonObject.class);
+
+        // Azione speciale: sostituzione/integrazione di un genitore fantasma
+        // con uno reale, propagata a tutti i fratelli che lo condividono.
+        if (bodyJson.has("_phantomReplace")) {
+            JsonObject pr = bodyJson.getAsJsonObject("_phantomReplace");
+            Long phantomId = pr.get("phantomId").getAsLong();
+            Long realParentId = pr.get("realParentId").getAsLong();
+            String field = (pr.has("field") && !pr.get("field").isJsonNull())
+                    ? pr.get("field").getAsString() : null;
+
+            FamilyMember phantom = DataStore.get().findFamilyMember(phantomId);
+            if (phantom == null || !phantom.isPhantom() || !familyCode.equals(phantom.getFamilyCode())) {
+                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                resp.getWriter().write("{\"error\":\"Nodo fantasma non trovato\"}");
+                return;
+            }
+
+            if ("mother".equals(field)) {
+                // Il padre resta ignoto (fantasma non eliminato): aggiungo
+                // solo la madre reale a tutti i fratelli che condividono il fantasma.
+                DataStore.get().propagateNewParentToPhantomSiblings(phantomId, "mother", realParentId);
+            } else {
+                // Il fantasma viene sostituito integralmente (es. è arrivato il padre).
+                DataStore.get().replacePhantomParent(phantomId, realParentId);
+            }
+
+            resp.getWriter().write(JsonUtil.GSON.toJson(DataStore.get().familyTree(familyCode)));
+            return;
+        }
+
+        // Flusso normale di aggiornamento
+        FamilyMember incoming = JsonUtil.GSON.fromJson(bodyJson, FamilyMember.class);
         if (incoming.getId() == null) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             resp.getWriter().write("{\"error\":\"ID mancante\"}");

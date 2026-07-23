@@ -185,13 +185,16 @@ function applyRelationToNewMember(newBody, rel) {
             break;
         case 'brother':
         case 'sister':
-            newBody.motherId = target.motherId || null;
-            newBody.fatherId = target.fatherId || null;
+            if (target.motherId || target.fatherId) {
+                newBody.motherId = target.motherId || null;
+                newBody.fatherId = target.fatherId || null;
+            } else {
+                newBody._siblingOf = target.id;
+            }
             break;
         case 'spouse':
             newBody.spouseId = target.id;
             break;
-        // mother/father: il legame va sul TARGET, non sul nuovo (fatto dopo)
     }
 }
 
@@ -204,9 +207,41 @@ async function applyRelationToTarget(savedNew, rel) {
     const targetUpdate = { ...target };
 
     switch (rel.relation) {
-        case 'mother': targetUpdate.motherId = savedNew.id; needsUpdate = true; break;
-        case 'father': targetUpdate.fatherId = savedNew.id; needsUpdate = true; break;
-        case 'spouse': targetUpdate.spouseId = savedNew.id; needsUpdate = true; break;
+        case 'mother':
+        case 'father': {
+            const isMother = rel.relation === 'mother';
+            const phantom = target.fatherId
+                ? treeMembers.find(m => m.id === target.fatherId && m.phantom)
+                : null;
+
+            if (phantom) {
+                if (isMother) {
+                    await api.put('/api/tree', {
+                        _phantomReplace: {
+                            phantomId: phantom.id,
+                            realParentId: savedNew.id,
+                            field: 'mother'
+                        }
+                    });
+                } else {
+                    await api.put('/api/tree', {
+                        _phantomReplace: {
+                            phantomId: phantom.id,
+                            realParentId: savedNew.id
+                        }
+                    });
+                }
+                needsUpdate = false;
+            } else {
+                targetUpdate[isMother ? 'motherId' : 'fatherId'] = savedNew.id;
+                needsUpdate = true;
+            }
+            break;
+        }
+        case 'spouse':
+            targetUpdate.spouseId = savedNew.id;
+            needsUpdate = true;
+            break;
     }
     if (needsUpdate) {
         await api.put('/api/tree', targetUpdate);

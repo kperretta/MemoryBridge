@@ -4,122 +4,568 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Memory Bridge - Registrati</title>
-    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Font moderni da Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #4E85BF;
+            --primary-dark: #33628F;
+            --primary-light: #82B0E1;
+            --accent: #D99364;
+            --card-bg: rgba(255, 255, 255, 0.92);
+            --card-border: rgba(255, 255, 255, 0.4);
+            --text-main: #1E293B;
+            --text-muted: #64748B;
+            --danger: #E11D48;
+            --danger-bg: #FFE4E6;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --radius-lg: 24px;
+            --radius-md: 14px;
+            --radius-pill: 999px;
+            --shadow-glow: 0 20px 40px -15px rgba(51, 98, 143, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #eef2f5;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow-x: hidden;
+            padding: 30px 20px;
+        }
+
+        /* SFONDO ANIMATO DECORATIVO */
+        .bg-shapes {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            top: 0;
+            left: 0;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.6;
+            animation: float 10s infinite alternate ease-in-out;
+        }
+
+        .shape-1 {
+            width: 400px;
+            height: 400px;
+            background: #4E85BF;
+            top: -80px;
+            left: -80px;
+        }
+
+        .shape-2 {
+            width: 450px;
+            height: 450px;
+            background: #D99364;
+            bottom: -120px;
+            right: -80px;
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, 40px) scale(1.08); }
+        }
+
+        /* CONTENITORE PRINCIPALE */
+        .auth-page {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .auth-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.12), var(--shadow-glow);
+            width: 100%;
+            display: grid;
+            grid-template-columns: 0.85fr 1.15fr;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        /* COLONNA SINISTRA (BRANDING) */
+        .brand-section {
+            background: linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(239, 244, 249, 0.8) 100%);
+            padding: 48px 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border-right: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .logo-wrapper {
+            position: relative;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .logo-wrapper:hover {
+            transform: scale(1.03);
+        }
+
+        .site-logo {
+            max-width: 170px;
+            height: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.06));
+        }
+
+        .site-title-img {
+            max-width: 190px;
+            height: auto;
+            margin-top: 10px;
+            object-fit: contain;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-top: 16px;
+            font-weight: 500;
+        }
+
+        /* COLONNA DESTRA (FORM REGISTRAZIONE) */
+        .form-section {
+            padding: 48px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .form-title {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.75rem;
+            color: var(--primary-dark);
+            margin-bottom: 24px;
+            letter-spacing: -0.5px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--text-main);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group input[type="password"] {
+            width: 100%;
+            padding: 13px 16px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            border: 2px solid #E2E8F0;
+            border-radius: var(--radius-md);
+            background: #FFFFFF;
+            color: var(--text-main);
+            transition: all 0.25s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(78, 133, 191, 0.15);
+        }
+
+        .form-group input.invalid {
+            border-color: var(--danger);
+            background-color: #FFF5F5;
+        }
+
+        /* PASSWORD WRAPPER & TOGGLE */
+        .password-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .password-wrapper input {
+            padding-right: 80px !important;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            background: transparent;
+            border: none;
+            color: var(--primary-dark);
+            font-weight: 700;
+            font-size: 0.78rem;
+            cursor: pointer;
+            padding: 6px 8px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .toggle-password:hover {
+            background: rgba(78, 133, 191, 0.1);
+        }
+
+        /* INDICATORE FORZA PASSWORD */
+        .password-strength {
+            height: 4px;
+            width: 100%;
+            background: #E2E8F0;
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .password-strength div {
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease, background-color 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .password-strength.weak div { width: 33%; background-color: var(--danger); }
+        .password-strength.medium div { width: 66%; background-color: var(--warning); }
+        .password-strength.strong div { width: 100%; background-color: var(--success); }
+
+        .password-hint {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+            line-height: 1.3;
+        }
+
+        /* ERRORI DI CAMPO */
+        .field-error {
+            color: var(--danger);
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin-top: 4px;
+            min-height: 16px;
+        }
+
+        /* SCELTA NUCLEO FAMILIARE (SCHEDE RADIO) */
+        .family-choice {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+            margin-bottom: 12px;
+        }
+
+        .family-choice input[type="radio"] {
+            display: none;
+        }
+
+        .family-choice label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 10px 8px;
+            background: #FFFFFF;
+            border: 2px solid #E2E8F0;
+            border-radius: var(--radius-md);
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: none;
+            letter-spacing: 0;
+            margin-bottom: 0;
+        }
+
+        .family-choice input[type="radio"]:checked + label {
+            border-color: var(--primary);
+            background: rgba(78, 133, 191, 0.08);
+            color: var(--primary-dark);
+        }
+
+        .family-detail {
+            display: none;
+            background: rgba(239, 244, 249, 0.6);
+            padding: 14px;
+            border-radius: var(--radius-md);
+            border: 1px dashed var(--primary-light);
+            margin-top: 8px;
+        }
+
+        .family-detail.active {
+            display: block;
+        }
+
+        .family-detail p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        /* MESSAGGI ERRORE GLOBALE */
+        .error-message {
+            background-color: var(--danger-bg);
+            color: var(--danger);
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            border: 1px solid rgba(225, 29, 72, 0.2);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* BOTTONE PRINCIPALE */
+        .btn {
+            width: 100%;
+            padding: 14px 24px;
+            border: none;
+            border-radius: var(--radius-pill);
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: #FFFFFF;
+            box-shadow: 0 4px 14px rgba(78, 133, 191, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(78, 133, 191, 0.5);
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-dark) 100%);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* FOOTER */
+        .auth-footer {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .auth-footer a {
+            color: var(--primary-dark);
+            font-weight: 700;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .auth-footer a:hover {
+            color: var(--primary);
+            text-decoration: underline;
+        }
+
+        /* RESPONSIVE DESIGN (MOBILE) */
+        @media (max-width: 840px) {
+            .auth-card {
+                grid-template-columns: 1fr;
+                max-width: 480px;
+            }
+
+            .brand-section {
+                padding: 32px 24px 20px 24px;
+                border-right: none;
+                border-bottom: 1px solid rgba(0,0,0,0.05);
+            }
+
+            .form-section {
+                padding: 32px 24px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+
+            .site-logo {
+                max-width: 130px;
+            }
+
+            .site-title-img {
+                max-width: 160px;
+            }
+
+            .family-choice {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
+
+<!-- Elementi decorativi di sfondo -->
+<div class="bg-shapes">
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+</div>
+
 <div class="auth-page">
     <div class="auth-card">
 
-        <img src="img/site/logo.png" alt="Logo del sito" width="250" height="250" style="display: block; margin: 0 auto;">
-        <img src="img/site/title.png" alt="Nome del sito" width="250" height="90" style="display: block; margin: 0 auto;">
-
-        <p class="subtitle">Crea il tuo account ed inizia a raccontare la tua storia!</p>
-
-        <form id="register-form" novalidate>
-            <div class="form-group">
-                <label for="firstName">Nome</label>
-                <input type="text" id="firstName" required
-                       minlength="2" maxlength="50"
-                       autocomplete="given-name">
-                <div class="field-error" data-for="firstName"></div>
+        <!-- Colonna Sinistra: Brand & Identità -->
+        <div class="brand-section">
+            <div class="logo-wrapper">
+                <img src="img/site/logo.png" alt="Logo Memory Bridge" class="site-logo">
             </div>
-
-            <div class="form-group">
-                <label for="lastName">Cognome</label>
-                <input type="text" id="lastName" required
-                       minlength="2" maxlength="50"
-                       autocomplete="family-name">
-                <div class="field-error" data-for="lastName"></div>
-            </div>
-
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" required
-                       maxlength="254"
-                       autocomplete="email">
-                <div class="field-error" data-for="email"></div>
-            </div>
-
-            <div class="form-group">
-                <label for="password">Password</label>
-                <div class="password-wrapper">
-                    <input type="password" id="password" required
-                           minlength="8" maxlength="128"
-                           autocomplete="new-password">
-                    <button type="button" class="toggle-password" data-target="password">Mostra</button>
-                </div>
-                <div class="password-strength"><div></div></div>
-                <div class="password-hint">Almeno 8 caratteri, con lettere e numeri e si consiglia l'utilizzo di un simbolo speciale.</div>
-                <div class="field-error" data-for="password"></div>
-            </div>
-
-            <div class="form-group">
-                <label for="passwordConfirm">Conferma password</label>
-                <div class="password-wrapper">
-                    <input type="password" id="passwordConfirm" required
-                           minlength="8" maxlength="128"
-                           autocomplete="new-password">
-                    <button type="button" class="toggle-password" data-target="passwordConfirm">Mostra</button>
-                </div>
-                <div class="field-error" data-for="passwordConfirm"></div>
-            </div>
-
-            <div class="form-group">
-                <label>Il tuo nucleo familiare</label>
-                <div class="family-choice">
-                    <input type="radio" name="familyChoice" id="choice-invite" value="invite">
-                    <label for="choice-invite">Ho un codice invito</label>
-
-                    <input type="radio" name="familyChoice" id="choice-existing" value="existing">
-                    <label for="choice-existing">Ho un codice famiglia</label>
-
-                    <input type="radio" name="familyChoice" id="choice-new" value="new">
-                    <label for="choice-new">Crea un nuovo nucleo</label>
-                </div>
-
-                <div class="family-detail" id="detail-invite">
-                    <p class="text-muted" style="margin-top:4px;font-size:0.85em">
-                        Inserisci il tuo codice invito:
-                    </p>
-                    <input type="text" id="inviteCode"
-                           maxlength="16"
-                           style="text-transform: uppercase"
-                           placeholder="es. A1B2C3D4">
-                    <div class="field-error" data-for="inviteCode"></div>
-                </div>
-
-                <div class="family-detail" id="detail-existing">
-                    <p class="text-muted" style="margin-top:4px;font-size:0.85em">
-                        Inserisci il codice identificativo del tuo nucleo familiare:
-                    </p>
-                    <input type="text" id="familyCode"
-                           maxlength="20"
-                           style="text-transform: uppercase"
-                           placeholder="es. ROSSI2025">
-                    <div class="field-error" data-for="familyCode"></div>
-                </div>
-
-                <div class="family-detail" id="detail-new">
-                    <p class="text-muted" style="margin-top:4px;font-size:0.85em">
-                        Scegli un nome per il tuo nuovo nucleo familiare:
-                    </p>
-                    <input type="text" id="newFamilyName"
-                           minlength="2" maxlength="40"
-                           placeholder="es. Famiglia Rossi">
-                    <div class="field-error" data-for="newFamilyName"></div>
-                </div>
-            </div>
-
-            <div id="error" class="error-message hidden"></div>
-            <button type="submit" id="submit-btn" class="btn btn-primary btn-block">Registrati</button>
-        </form>
-
-        <div class="auth-footer">
-            Hai già un account? <a href="index.html">Accedi</a>
+            <img src="img/site/title.png" alt="Memory Bridge" class="site-title-img">
+            <p class="subtitle">Crea il tuo account ed inizia a custodire i tuoi ricordi più preziosi.</p>
         </div>
+
+        <!-- Colonna Destra: Modulo Registrazione -->
+        <div class="form-section">
+            <h1 class="form-title">Crea un Account</h1>
+
+            <form id="register-form" novalidate>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="firstName">Nome</label>
+                        <input type="text" id="firstName" required minlength="2" maxlength="50" autocomplete="given-name" placeholder="Mario">
+                        <div class="field-error" data-for="firstName"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lastName">Cognome</label>
+                        <input type="text" id="lastName" required minlength="2" maxlength="50" autocomplete="family-name" placeholder="Rossi">
+                        <div class="field-error" data-for="lastName"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Indirizzo Email</label>
+                    <input type="email" id="email" required maxlength="254" autocomplete="email" placeholder="mario.rossi@esempio.it">
+                    <div class="field-error" data-for="email"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="password" required minlength="8" maxlength="128" autocomplete="new-password" placeholder="••••••••">
+                        <button type="button" class="toggle-password" data-target="password">Mostra</button>
+                    </div>
+                    <div class="password-strength"><div></div></div>
+                    <div class="password-hint">Almeno 8 caratteri con lettere e numeri.</div>
+                    <div class="field-error" data-for="password"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="passwordConfirm">Conferma password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="passwordConfirm" required minlength="8" maxlength="128" autocomplete="new-password" placeholder="••••••••">
+                        <button type="button" class="toggle-password" data-target="passwordConfirm">Mostra</button>
+                    </div>
+                    <div class="field-error" data-for="passwordConfirm"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Scegli una delle seguenti opzioni:</label>
+                    <div class="family-choice">
+                        <input type="radio" name="familyChoice" id="choice-invite" value="invite">
+                        <label for="choice-invite">Entra tramite <br> CODICE INVITO</label>
+
+                        <input type="radio" name="familyChoice" id="choice-existing" value="existing">
+                        <label for="choice-existing">Entra tramite <br> CODICE FAMIGLIA</label>
+
+                        <input type="radio" name="familyChoice" id="choice-new" value="new">
+                        <label for="choice-new">Crea un <br> NUOVO NUCLEO FAMILIARE </label>
+                    </div>
+
+                    <div class="family-detail" id="detail-invite">
+                        <p>Inserisci il tuo codice invito:</p>
+                        <input type="text" id="inviteCode" maxlength="16" style="text-transform: uppercase" placeholder="ES. A1B2C3D4">
+                        <div class="field-error" data-for="inviteCode"></div>
+                    </div>
+
+                    <div class="family-detail" id="detail-existing">
+                        <p>Inserisci il codice identificativo del tuo nucleo:</p>
+                        <input type="text" id="familyCode" maxlength="20" style="text-transform: uppercase" placeholder="ES. ROSSI2025">
+                        <div class="field-error" data-for="familyCode"></div>
+                    </div>
+
+                    <div class="family-detail" id="detail-new">
+                        <p>Scegli un nome per il nuovo nucleo familiare:</p>
+                        <input type="text" id="newFamilyName" minlength="2" maxlength="40" placeholder="ES. Famiglia Rossi">
+                        <div class="field-error" data-for="newFamilyName"></div>
+                    </div>
+                </div>
+
+                <div id="error" class="error-message hidden"></div>
+
+                <button type="submit" id="submit-btn" class="btn btn-primary">Registrati</button>
+            </form>
+
+            <div class="auth-footer">
+                Hai già un account? <a href="index.html">Accedi</a>
+            </div>
+        </div>
+
     </div>
 </div>
 
+<!-- Script JavaScript con logica di validazione originale -->
 <script src="js/api.js"></script>
 <script>
     // ---------- Utility di validazione ----------
@@ -180,7 +626,7 @@
         if (v.length < 8)   { setFieldError('password', 'Password troppo corta (min 8 caratteri)'); return null; }
         if (v.length > 128) { setFieldError('password', 'Password troppo lunga (max 128 caratteri)'); return null; }
         if (!/[A-Za-z]/.test(v) || !/\d/.test(v)) {
-            setFieldError('password', 'La password deve contenere almeno una lettera e un numero');
+            setFieldError('password', 'Richiesta almeno una lettera e un numero');
             return null;
         }
         setFieldError('password', '');

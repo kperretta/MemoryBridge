@@ -1241,4 +1241,100 @@ h3 { font-family: var(--font-display); font-size: 17px; font-weight: 600; margin
 /* Il nodo intero è comunque cliccabile per aprire la timeline */
 .tree-node {
     cursor: pointer;
+}/* ============================================================
+   Register form — scelta nucleo familiare + validazione
+   ============================================================ */
+.family-choice {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+}
+.family-choice label {
+    flex: 1;
+    min-width: 140px;
+    text-align: center;
+    border: 2px solid var(--primary-light);
+    border-radius: var(--radius);
+    padding: 10px 8px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background 0.15s, border-color 0.15s;
+}
+.family-choice input { display: none; }
+.family-choice input:checked + label {
+    border-color: var(--primary);
+    background: var(--primary-light);
+    font-weight: 600;
+}
+.family-detail { display: none; }
+.family-detail.active { display: block; }
+
+/* Errori inline per singolo campo */
+.field-error {
+    color: var(--danger);
+    font-size: 12.5px;
+    margin-top: 5px;
+    min-height: 1em;
+    font-weight: 500;
+}
+.form-group input.invalid,
+.form-group textarea.invalid {
+    border-color: var(--danger);
+    background: var(--danger-light);
+}
+.form-group input.invalid:focus {
+    box-shadow: 0 0 0 3px rgba(194, 86, 80, 0.15);
+}
+
+/* Password: toggle mostra/nascondi + barra di forza */
+.password-wrapper { position: relative; }
+.password-wrapper .toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--primary-dark);
+    padding: 4px 8px;
+    border-radius: var(--radius-pill);
+    transition: background 0.15s;
+}
+.password-wrapper .toggle-password:hover { background: var(--primary-lighter); }
+
+.password-strength {
+    height: 4px;
+    border-radius: var(--radius-pill);
+    margin-top: 6px;
+    background: var(--border);
+    overflow: hidden;
+}
+.password-strength > div {
+    height: 100%;
+    width: 0;
+    background: var(--danger);
+    transition: width 0.25s var(--ease-out), background 0.25s;
+    border-radius: var(--radius-pill);
+}
+.password-strength.weak   > div { width: 33%;  background: var(--danger); }
+.password-strength.medium > div { width: 66%;  background: var(--gold); }
+.password-strength.strong > div { width: 100%; background: var(--success); }
+
+.password-hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 5px;
+}
+
+/* Bottone disabilitato durante il submit */
+.btn[disabled],
+.btn[disabled]:hover {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }

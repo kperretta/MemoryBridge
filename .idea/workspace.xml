@@ -9,7 +9,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b36b1a15-c51e-4c3f-8a8d-6a46c344b8bf" name="Changes" comment="aggiunta mock in caso di assenza api key Groq" />
+    <list default="true" id="b36b1a15-c51e-4c3f-8a8d-6a46c344b8bf" name="Changes" comment="Risolto problema profilo">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/memorybridge/servlet/LinkSelfServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/memorybridge/servlet/LinkSelfServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/memorybridge/servlet/RegisterServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/memorybridge/servlet/RegisterServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/css/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/css/style.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/js/link-member.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/js/link-member.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/js/navbar.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/js/navbar.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/register.html" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -26,6 +34,11 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="UPDATE_TYPE" value="REBASE" />
   </component>
@@ -67,24 +80,24 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;Tomcat Server.Tomcat 11.0.4.executor&quot;: &quot;Run&quot;,
-    &quot;Tomcat Server.Tomcat 11.0.41.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/ireneiuorio/Desktop/MemoryBridge/src/main/resources/demo-media&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;vcs.Git&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "DefaultHtmlFileTemplate": "HTML File",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "Tomcat Server.Tomcat 11.0.4.executor": "Run",
+    "Tomcat Server.Tomcat 11.0.41.executor": "Run",
+    "git-widget-placeholder": "master",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/ireneiuorio/Desktop/MemoryBridge/src/main/resources/demo-media",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "reference.settingsdialog.project.grazie",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/main/resources/demo-media" />
@@ -394,7 +407,23 @@
       <option name="project" value="LOCAL" />
       <updated>1784736209945</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="Risolto problema profilo">
+      <option name="closed" value="true" />
+      <created>1784745309510</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1784745309510</updated>
+    </task>
+    <task id="LOCAL-00022" summary="Risolto problema profilo">
+      <option name="closed" value="true" />
+      <created>1784745349429</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1784745349429</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -427,6 +456,7 @@
     <MESSAGE value="icona modifica" />
     <MESSAGE value="Aggiunta data a caricamento contenuto" />
     <MESSAGE value="aggiunta mock in caso di assenza api key Groq" />
-    <option name="LAST_COMMIT_MESSAGE" value="aggiunta mock in caso di assenza api key Groq" />
+    <MESSAGE value="Risolto problema profilo" />
+    <option name="LAST_COMMIT_MESSAGE" value="Risolto problema profilo" />
   </component>
 </project>

@@ -10,8 +10,6 @@ const RELATIONS = [
     { id: 'daughter',label: 'Figlia' }
 ];
 
-
-
 let allMembers = [];
 let selectedUnlinkedId = null;
 let relationTarget = null;
@@ -62,7 +60,9 @@ function renderUnlinkedGrid() {
 document.getElementById('confirm-self-btn').addEventListener('click', async () => {
     if (!selectedUnlinkedId) return;
     try {
-        await api.post('/api/link-self', { familyMemberId: selectedUnlinkedId });
+        const result = await api.post('/api/link-self', { familyMemberId: selectedUnlinkedId });
+        // Aggiorno currentUser così la navbar trova subito familyMemberId
+        if (result && result.user) window.currentUser = result.user;
         toast('Ti abbiamo collegato al tuo nodo nell\'albero');
         window.location.href = 'tree.html';
     } catch (e) {
@@ -156,7 +156,9 @@ document.getElementById('member-form').addEventListener('submit', async (e) => {
 
         // Collego il nodo appena creato al proprio account (server-side,
         // il userId non viene mai inviato dal client)
-        await api.post('/api/link-self', { familyMemberId: saved.id });
+        const linkResult = await api.post('/api/link-self', { familyMemberId: saved.id });
+        // Aggiorno currentUser così la navbar trova subito familyMemberId
+        if (linkResult && linkResult.user) window.currentUser = linkResult.user;
 
         toast('Sei stato aggiunto all\'albero');
         window.location.href = 'tree.html';

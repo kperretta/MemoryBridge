@@ -5,35 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Memory Bridge - Registrati</title>
     <link rel="stylesheet" href="css/style.css">
-    <style>
-        .family-choice {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 14px;
-            flex-wrap: wrap;
-        }
-        .family-choice label {
-            flex: 1;
-            min-width: 140px;
-            text-align: center;
-            border: 2px solid var(--primary-light);
-            border-radius: 8px;
-            padding: 10px 8px;
-            cursor: pointer;
-            font-size: 0.9em;
-            transition: background 0.15s, border-color 0.15s;
-        }
-        .family-choice input {
-            display: none;
-        }
-        .family-choice input:checked + label {
-            border-color: var(--primary);
-            background: var(--primary-light);
-            font-weight: 600;
-        }
-        .family-detail { display: none; }
-        .family-detail.active { display: block; }
-    </style>
 </head>
 <body>
 <div class="auth-page">
@@ -44,22 +15,53 @@
 
         <p class="subtitle">Crea il tuo account ed inizia a raccontare la tua storia!</p>
 
-        <form id="register-form">
+        <form id="register-form" novalidate>
             <div class="form-group">
                 <label for="firstName">Nome</label>
-                <input type="text" id="firstName" required>
+                <input type="text" id="firstName" required
+                       minlength="2" maxlength="50"
+                       autocomplete="given-name">
+                <div class="field-error" data-for="firstName"></div>
             </div>
+
             <div class="form-group">
                 <label for="lastName">Cognome</label>
-                <input type="text" id="lastName" required>
+                <input type="text" id="lastName" required
+                       minlength="2" maxlength="50"
+                       autocomplete="family-name">
+                <div class="field-error" data-for="lastName"></div>
             </div>
+
             <div class="form-group">
                 <label for="email">Email</label>
-                <input type="email" id="email" required>
+                <input type="email" id="email" required
+                       maxlength="254"
+                       autocomplete="email">
+                <div class="field-error" data-for="email"></div>
             </div>
+
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" required minlength="4">
+                <div class="password-wrapper">
+                    <input type="password" id="password" required
+                           minlength="8" maxlength="128"
+                           autocomplete="new-password">
+                    <button type="button" class="toggle-password" data-target="password">Mostra</button>
+                </div>
+                <div class="password-strength"><div></div></div>
+                <div class="password-hint">Almeno 8 caratteri, con lettere e numeri e si consiglia l'utilizzo di un simbolo speciale.</div>
+                <div class="field-error" data-for="password"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="passwordConfirm">Conferma password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="passwordConfirm" required
+                           minlength="8" maxlength="128"
+                           autocomplete="new-password">
+                    <button type="button" class="toggle-password" data-target="passwordConfirm">Mostra</button>
+                </div>
+                <div class="field-error" data-for="passwordConfirm"></div>
             </div>
 
             <div class="form-group">
@@ -79,24 +81,37 @@
                     <p class="text-muted" style="margin-top:4px;font-size:0.85em">
                         Inserisci il tuo codice invito:
                     </p>
-                    <input type="text" id="inviteCode" placeholder="es. A1B2C3D4">
+                    <input type="text" id="inviteCode"
+                           maxlength="16"
+                           style="text-transform: uppercase"
+                           placeholder="es. A1B2C3D4">
+                    <div class="field-error" data-for="inviteCode"></div>
                 </div>
+
                 <div class="family-detail" id="detail-existing">
                     <p class="text-muted" style="margin-top:4px;font-size:0.85em">
                         Inserisci il codice identificativo del tuo nucleo familiare:
                     </p>
-                    <input type="text" id="familyCode" placeholder="es. ROSSI2025">
+                    <input type="text" id="familyCode"
+                           maxlength="20"
+                           style="text-transform: uppercase"
+                           placeholder="es. ROSSI2025">
+                    <div class="field-error" data-for="familyCode"></div>
                 </div>
+
                 <div class="family-detail" id="detail-new">
                     <p class="text-muted" style="margin-top:4px;font-size:0.85em">
                         Scegli un nome per il tuo nuovo nucleo familiare:
                     </p>
-                    <input type="text" id="newFamilyName" placeholder="es. Famiglia Rossi">
+                    <input type="text" id="newFamilyName"
+                           minlength="2" maxlength="40"
+                           placeholder="es. Famiglia Rossi">
+                    <div class="field-error" data-for="newFamilyName"></div>
                 </div>
             </div>
 
             <div id="error" class="error-message hidden"></div>
-            <button type="submit" class="btn btn-primary btn-block">Registrati</button>
+            <button type="submit" id="submit-btn" class="btn btn-primary btn-block">Registrati</button>
         </form>
 
         <div class="auth-footer">
@@ -107,14 +122,120 @@
 
 <script src="js/api.js"></script>
 <script>
-    // Pre-compila e seleziona automaticamente l'opzione "invito" se presente
-    // nell'URL: register.html?invite=XXXX
+    // ---------- Utility di validazione ----------
+    const NAME_REGEX   = /^[\p{L}][\p{L} '\-]*[\p{L}]$/u;   // lettere unicode, spazi, ' e -
+    const EMAIL_REGEX  = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    const CODE_REGEX   = /^[A-Z0-9]{4,20}$/;
+    const INVITE_REGEX = /^[A-Z0-9]{4,16}$/;
+
+    function setFieldError(id, msg) {
+        const input = document.getElementById(id);
+        const errEl = document.querySelector(`.field-error[data-for="${id}"]`);
+        if (input) input.classList.toggle('invalid', !!msg);
+        if (errEl) errEl.textContent = msg || '';
+    }
+
+    function clearAllErrors() {
+        document.querySelectorAll('.field-error').forEach(e => e.textContent = '');
+        document.querySelectorAll('.invalid').forEach(e => e.classList.remove('invalid'));
+        const gErr = document.getElementById('error');
+        gErr.textContent = '';
+        gErr.classList.add('hidden');
+    }
+
+    function validateName(id, label) {
+        const v = document.getElementById(id).value.trim();
+        if (v.length < 2)  { setFieldError(id, `${label} troppo corto (min 2 caratteri)`); return null; }
+        if (v.length > 50) { setFieldError(id, `${label} troppo lungo (max 50 caratteri)`); return null; }
+        if (!NAME_REGEX.test(v)) {
+            setFieldError(id, `${label} contiene caratteri non ammessi`);
+            return null;
+        }
+        setFieldError(id, '');
+        return v;
+    }
+
+    function validateEmail() {
+        const v = document.getElementById('email').value.trim().toLowerCase();
+        if (!v)                       { setFieldError('email', 'Inserisci la tua email'); return null; }
+        if (v.length > 254)           { setFieldError('email', 'Email troppo lunga'); return null; }
+        if (!EMAIL_REGEX.test(v))     { setFieldError('email', 'Formato email non valido'); return null; }
+        setFieldError('email', '');
+        return v;
+    }
+
+    function passwordStrength(pwd) {
+        let score = 0;
+        if (pwd.length >= 8)  score++;
+        if (pwd.length >= 12) score++;
+        if (/[A-Za-z]/.test(pwd) && /\d/.test(pwd)) score++;
+        if (/[^A-Za-z0-9]/.test(pwd)) score++;
+        if (score <= 1) return 'weak';
+        if (score === 2 || score === 3) return 'medium';
+        return 'strong';
+    }
+
+    function validatePassword() {
+        const v = document.getElementById('password').value;
+        if (v.length < 8)   { setFieldError('password', 'Password troppo corta (min 8 caratteri)'); return null; }
+        if (v.length > 128) { setFieldError('password', 'Password troppo lunga (max 128 caratteri)'); return null; }
+        if (!/[A-Za-z]/.test(v) || !/\d/.test(v)) {
+            setFieldError('password', 'La password deve contenere almeno una lettera e un numero');
+            return null;
+        }
+        setFieldError('password', '');
+        return v;
+    }
+
+    function validatePasswordConfirm(pwd) {
+        const v = document.getElementById('passwordConfirm').value;
+        if (v !== pwd) { setFieldError('passwordConfirm', 'Le due password non coincidono'); return null; }
+        setFieldError('passwordConfirm', '');
+        return v;
+    }
+
+    // ---------- Toggle mostra/nascondi password ----------
+    document.querySelectorAll('.toggle-password').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const target = document.getElementById(btn.dataset.target);
+            if (target.type === 'password') {
+                target.type = 'text';
+                btn.textContent = 'Nascondi';
+            } else {
+                target.type = 'password';
+                btn.textContent = 'Mostra';
+            }
+        });
+    });
+
+    // ---------- Barra di forza password ----------
+    const strengthBar = document.querySelector('.password-strength');
+    document.getElementById('password').addEventListener('input', (e) => {
+        strengthBar.classList.remove('weak', 'medium', 'strong');
+        if (e.target.value.length > 0) {
+            strengthBar.classList.add(passwordStrength(e.target.value));
+        }
+    });
+
+    // ---------- Validazione al blur (feedback immediato) ----------
+    document.getElementById('firstName').addEventListener('blur', () => validateName('firstName', 'Nome'));
+    document.getElementById('lastName').addEventListener('blur', () => validateName('lastName', 'Cognome'));
+    document.getElementById('email').addEventListener('blur', validateEmail);
+    document.getElementById('password').addEventListener('blur', validatePassword);
+    document.getElementById('passwordConfirm').addEventListener('blur', () => {
+        validatePasswordConfirm(document.getElementById('password').value);
+    });
+
+    // ---------- Scelta nucleo familiare ----------
     const urlInvite = new URLSearchParams(window.location.search).get('invite');
     const choices = ['invite', 'existing', 'new'];
 
     function showDetail(choice) {
         choices.forEach(c => {
             document.getElementById(`detail-${c}`).classList.toggle('active', c === choice);
+            // Pulisco eventuali errori dei campi non attivi
+            const map = { invite: 'inviteCode', existing: 'familyCode', new: 'newFamilyName' };
+            if (c !== choice) setFieldError(map[c], '');
         });
     }
 
@@ -123,7 +244,7 @@
     });
 
     if (urlInvite) {
-        document.getElementById('inviteCode').value = urlInvite;
+        document.getElementById('inviteCode').value = urlInvite.toUpperCase();
         document.getElementById('choice-invite').checked = true;
         showDetail('invite');
     } else {
@@ -131,53 +252,65 @@
         showDetail('new');
     }
 
+    // ---------- Submit ----------
     document.getElementById('register-form').addEventListener('submit', async (e) => {
         e.preventDefault();
+        clearAllErrors();
+
+        const submitBtn = document.getElementById('submit-btn');
         const errEl = document.getElementById('error');
-        errEl.classList.add('hidden');
+
+        // Validazioni campo per campo
+        const firstName = validateName('firstName', 'Nome');
+        const lastName  = validateName('lastName', 'Cognome');
+        const email     = validateEmail();
+        const password  = validatePassword();
+        const pwdConf   = password ? validatePasswordConfirm(password) : null;
 
         const choice = document.querySelector('input[name="familyChoice"]:checked')?.value;
+        let inviteCode = '', familyCode = '', newFamilyName = '';
+
         if (!choice) {
             errEl.textContent = 'Scegli come vuoi collegarti a un nucleo familiare';
             errEl.classList.remove('hidden');
             return;
         }
 
+        if (choice === 'invite') {
+            inviteCode = document.getElementById('inviteCode').value.trim().toUpperCase();
+            if (!inviteCode)                  { setFieldError('inviteCode', 'Inserisci il codice invito'); return; }
+            if (!INVITE_REGEX.test(inviteCode)) { setFieldError('inviteCode', 'Codice invito non valido (4-16 caratteri, solo lettere e numeri)'); return; }
+        } else if (choice === 'existing') {
+            familyCode = document.getElementById('familyCode').value.trim().toUpperCase();
+            if (!familyCode)                { setFieldError('familyCode', 'Inserisci il codice famiglia'); return; }
+            if (!CODE_REGEX.test(familyCode)) { setFieldError('familyCode', 'Codice famiglia non valido (4-20 caratteri, solo lettere e numeri)'); return; }
+        } else if (choice === 'new') {
+            newFamilyName = document.getElementById('newFamilyName').value.trim();
+            if (!newFamilyName)          { setFieldError('newFamilyName', 'Dai un nome al tuo nuovo nucleo familiare'); return; }
+            if (newFamilyName.length < 2) { setFieldError('newFamilyName', 'Nome troppo corto (min 2 caratteri)'); return; }
+            if (newFamilyName.length > 40){ setFieldError('newFamilyName', 'Nome troppo lungo (max 40 caratteri)'); return; }
+        }
+
+        // Blocco se una qualunque validazione principale è fallita
+        if (!firstName || !lastName || !email || !password || !pwdConf) return;
+
         const body = {
-            firstName: document.getElementById('firstName').value.trim(),
-            lastName: document.getElementById('lastName').value.trim(),
-            email: document.getElementById('email').value.trim(),
-            password: document.getElementById('password').value,
-            inviteCode: choice === 'invite' ? document.getElementById('inviteCode').value.trim() : '',
-            familyCode: choice === 'existing' ? document.getElementById('familyCode').value.trim() : '',
-            newFamilyName: choice === 'new' ? document.getElementById('newFamilyName').value.trim() : ''
+            firstName, lastName, email, password,
+            choice,           // 'invite' | 'existing' | 'new'
+            inviteCode, familyCode, newFamilyName
         };
 
-        if (choice === 'invite' && !body.inviteCode) {
-            errEl.textContent = 'Inserisci il codice invito ricevuto';
-            errEl.classList.remove('hidden');
-            return;
-        }
-        if (choice === 'existing' && !body.familyCode) {
-            errEl.textContent = 'Inserisci il codice famiglia';
-            errEl.classList.remove('hidden');
-            return;
-        }
-        if (choice === 'new' && !body.newFamilyName) {
-            errEl.textContent = 'Dai un nome al tuo nuovo nucleo familiare';
-            errEl.classList.remove('hidden');
-            return;
-        }
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Registrazione in corso...';
 
         try {
             const result = await api.post('/api/register', body);
-            // Chi crea un nuovo nucleo è già l'unico membro dell'albero;
-            // chi si unisce con invito/codice esistente deve prima dirci
-            // se è già presente nell'albero o va aggiunto come nuovo nodo.
             window.location.href = result.isNewFamily ? 'home.html' : 'link-member.html';
         } catch (err) {
-            errEl.textContent = err.message;
+            errEl.textContent = err.message || 'Errore durante la registrazione';
             errEl.classList.remove('hidden');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Registrati';
         }
     });
 </script>

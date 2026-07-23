@@ -2,6 +2,7 @@ package com.memorybridge.servlet;
 
 import com.memorybridge.data.DataStore;
 import com.memorybridge.model.FamilyMember;
+import com.memorybridge.model.User;
 import com.memorybridge.util.JsonUtil;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -26,6 +27,7 @@ public class LinkSelfServlet extends HttpServlet {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
 
+        // ---------- Sessione ----------
         HttpSession session = req.getSession(false);
         if (session == null || session.getAttribute("userId") == null) {
             resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -35,17 +37,46 @@ public class LinkSelfServlet extends HttpServlet {
         Long userId = (Long) session.getAttribute("userId");
         String familyCode = (String) session.getAttribute("familyCode");
 
-        Map<String, Object> body = JsonUtil.GSON.fromJson(req.getReader(), Map.class);
-        Object rawId = body.get("familyMemberId");
-        if (rawId == null) {
+        // ---------- Body ----------
+        Map<String, Object> body;
+        try {
+            body = JsonUtil.GSON.fromJson(req.getReader(), Map.class);
+            if (body == null) throw new RuntimeException("empty");
+        } catch (Exception e) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            resp.getWriter().write("{\"error\":\"familyMemberId mancante\"}");
+            resp.getWriter().write("{\"error\":\"Richiesta non valida\"}");
+            return;
+        }
+
+        Object rawId = body.get("familyMemberId");
+        if (!(rawId instanceof Number)) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("{\"error\":\"familyMemberId mancante o non valido\"}");
             return;
         }
         Long familyMemberId = ((Number) rawId).longValue();
 
+        // ---------- User dalla sessione ----------
+        User user = DataStore.get().findUser(userId);
+        if (user == null) {
+            // Sessione valida ma utente sparito dal DB in-memory (es. dopo un riavvio)
+            resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            resp.getWriter().write("{\"error\":\"Sessione non più valida, effettua di nuovo l'accesso\"}");
+            return;
+        }
+
+        // Se l'utente ha già un nodo collegato, non permettergli di cambiarlo
+        // qui: renderebbe orfano il vecchio nodo. Va gestito con un endpoint
+        // apposito (es. /api/unlink-self) se in futuro vorrai supportarlo.
+        if (user.getFamilyMemberId() != null) {
+            resp.setStatus(HttpServletResponse.SC_CONFLICT);
+            resp.getWriter().write("{\"error\":\"Sei già collegato a un nodo dell'albero\"}");
+            return;
+        }
+
+        // ---------- FamilyMember ----------
         FamilyMember member = DataStore.get().findFamilyMember(familyMemberId);
-        if (member == null || !member.getFamilyCode().equals(familyCode)) {
+        if (member == null || !familyCode.equals(member.getFamilyCode())) {
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
             resp.getWriter().write("{\"error\":\"Membro non trovato in questa famiglia\"}");
             return;
@@ -56,9 +87,20 @@ public class LinkSelfServlet extends HttpServlet {
             return;
         }
 
+        // ---------- Collega nei due sensi ----------
         member.setUserId(userId);
         DataStore.get().updateFamilyMember(member);
 
-        resp.getWriter().write(JsonUtil.GSON.toJson(member));
+        user.setFamilyMemberId(member.getId());
+        // (l'oggetto User è la stessa istanza presente in DataStore, quindi
+        // la modifica è già persistita nella mappa in-memory)
+
+        // ---------- Risposta ----------
+        // Restituisco sia il member che l'user aggiornato: il frontend userà
+        // l'user per rinfrescare window.currentUser e riverniciare la navbar.
+        resp.getWriter().write(JsonUtil.GSON.toJson(Map.of(
+                "member", member,
+                "user", user.toSafeCopy()
+        )));
     }
 }

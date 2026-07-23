@@ -138,6 +138,7 @@
             color: #ffffff;
         }
 
+        /* --- BOTTONE LOGOUT: più leggibile --- */
         .btn-logout {
             display: inline-flex;
             align-items: center;
@@ -145,18 +146,27 @@
             width: 38px;
             height: 38px;
             border-radius: 50%;
-            color: #94a3b8;
-            background: rgba(241, 245, 249, 0.8);
+            color: #475569;                          /* più scuro, ben leggibile */
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;               /* bordo definito */
             text-decoration: none;
             transition: all 0.2s ease;
             margin-left: 4px;
             flex-shrink: 0;
+            padding: 0;
+        }
+
+        .btn-logout svg {
+            display: block;
+            flex-shrink: 0;
         }
 
         .btn-logout:hover {
-            color: #ef4444;
-            background: #fee2e2;
+            color: #ffffff;
+            background: #ef4444;                     /* rosso pieno all'hover */
+            border-color: #ef4444;
             transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
         }
 
         @media (max-width: 900px) {
@@ -241,10 +251,10 @@ function renderNavbar(activeSection) {
                     ${userBadge}
 
                     <a href="#" class="btn-logout" onclick="logout(event)" title="Esci">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                            <polyline points="16 17 21 12 16 7"/>
-                            <line x1="21" y1="12" x2="9" y2="12"/>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
                         </svg>
                     </a>
                 </div>

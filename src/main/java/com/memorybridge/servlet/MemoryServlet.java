@@ -8,7 +8,9 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 /**
@@ -38,7 +40,14 @@ public class MemoryServlet extends HttpServlet {
         String personParam = req.getParameter("personId");
 
         if (idParam != null) {
-            Memory m = DataStore.get().findMemory(Long.parseLong(idParam));
+            Memory m;
+            try {
+                m = DataStore.get().findMemory(Long.parseLong(idParam));
+            } catch (NumberFormatException e) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                resp.getWriter().write("{\"error\":\"Id non valido\"}");
+                return;
+            }
             if (m == null) {
                 resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 resp.getWriter().write("{\"error\":\"Ricordo non trovato\"}");
@@ -50,7 +59,13 @@ public class MemoryServlet extends HttpServlet {
 
         List<Memory> list;
         if (personParam != null) {
-            list = DataStore.get().memoriesByPerson(Long.parseLong(personParam));
+            try {
+                list = DataStore.get().memoriesByPerson(Long.parseLong(personParam));
+            } catch (NumberFormatException e) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                resp.getWriter().write("{\"error\":\"personId non valido\"}");
+                return;
+            }
         } else {
             list = DataStore.get().memoriesByFamily(familyCode);
         }
@@ -74,7 +89,65 @@ public class MemoryServlet extends HttpServlet {
         Long userId = (Long) session.getAttribute("userId");
         String familyCode = (String) session.getAttribute("familyCode");
 
-        Memory incoming = JsonUtil.GSON.fromJson(req.getReader(), Memory.class);
+        Memory incoming;
+        try {
+            incoming = JsonUtil.GSON.fromJson(req.getReader(), Memory.class);
+            if (incoming == null) throw new RuntimeException("empty body");
+        } catch (Exception e) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("{\"error\":\"Richiesta non valida\"}");
+            return;
+        }
+
+        // ---------- Validazioni base ----------
+        if (incoming.getTitle() == null || incoming.getTitle().isBlank()) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("{\"error\":\"Il titolo è obbligatorio\"}");
+            return;
+        }
+        if (incoming.getMediaId() == null) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("{\"error\":\"Devi allegare un contenuto (audio, video o foto)\"}");
+            return;
+        }
+        if (DataStore.get().findMedia(incoming.getMediaId()) == null) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("{\"error\":\"Contenuto multimediale non trovato\"}");
+            return;
+        }
+        if (incoming.getTaggedPersonId() == null) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("{\"error\":\"Scegli il protagonista del ricordo\"}");
+            return;
+        }
+        // Il protagonista deve appartenere alla stessa famiglia dell'utente
+        var tagged = DataStore.get().findFamilyMember(incoming.getTaggedPersonId());
+        if (tagged == null || !familyCode.equals(tagged.getFamilyCode())) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("{\"error\":\"Protagonista non valido per questa famiglia\"}");
+            return;
+        }
+
+        // ---------- Data del ricordo: non può essere nel futuro ----------
+        // Un ricordo è per definizione nel passato; il controllo lato client
+        // si può bypassare, quindi lo replichiamo qui.
+        if (incoming.getEventDate() != null && !incoming.getEventDate().isBlank()) {
+            try {
+                LocalDate parsed = LocalDate.parse(incoming.getEventDate());
+                if (parsed.isAfter(LocalDate.now())) {
+                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    resp.getWriter().write("{\"error\":\"La data del ricordo non può essere nel futuro\"}");
+                    return;
+                }
+            } catch (DateTimeParseException e) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                resp.getWriter().write("{\"error\":\"Data del ricordo non valida\"}");
+                return;
+            }
+        }
+
+        // ---------- Campi impostati dal server ----------
+        // Non ci fidiamo mai di authorId/familyCode/createdAt inviati dal client.
         incoming.setAuthorId(userId);
         incoming.setFamilyCode(familyCode);
         incoming.setCreatedAt(LocalDateTime.now());

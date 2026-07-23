@@ -36,6 +36,11 @@ const SUGGESTIONS = {
 (async function init() {
     await requireAuth();
     renderNavbar('create');
+
+    // Impedisce di selezionare date future nel picker
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('c-eventDate').max = today;
+
     familyMembers = await api.get('/api/tree');
     const sel = document.getElementById('c-person');
     sel.innerHTML = '<option value="">— Scegli una persona —</option>';
@@ -309,6 +314,15 @@ async function publish() {
     if (!uploadedMediaId) { showErr('Carica o registra prima un contenuto.'); return false; }
     if (!title) { showErr('Dai un titolo al tuo ricordo.'); return false; }
     if (!personId) { showErr('Scegli il protagonista del ricordo.'); return false; }
+
+// Un ricordo è per definizione nel passato: rifiuto date future
+    if (eventDate) {
+        const today = new Date().toISOString().split('T')[0];
+        if (eventDate > today) {
+            showErr('La data del ricordo non può essere nel futuro.');
+            return false;
+        }
+    }
 
     try {
         const saved = await api.post('/api/memories', {

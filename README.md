@@ -51,21 +51,8 @@ src/main/
 │   └── util/          → JsonUtil (Gson con LocalDateTime)
 └── webapp/
     ├── WEB-INF/       → web.xml
-    ├── css/           → style.css (palette verde acqua)
+    ├── css/           → style.css 
     ├── js/            → api.js (wrapper fetch) + un file per pagina
     ├── *.html         → una pagina per task (chat, upload, tree, ...)
     └── index.html     → login
 ```
-
-## Miglioramenti dall'Assignment 3 già implementati
-
-- **#2**: etichetta testuale "Registra audio" accanto al microfono in chat
-- **#5**: messaggio di benvenuto di Iris spezzato in due messaggi separati
-- **#6**: highlight temporaneo del nodo appena creato nell'albero (animazione CSS `highlightNew`)
-- **#7**: bottoni di condivisione rapida (WhatsApp, Email, Telegram) nella pagina invito
-- **#10**: hover con `transform` sulle card del feed per comunicare interattività
-
-Da rifinire ancora:
-- **#1**: sposta l'invito nell'albero (già iniziato: menu contestuale su nodo)
-- **#3**: integrare selezione familiare inline nel form invito
-- **#4**: cursor pointer sui nodi (già presente)

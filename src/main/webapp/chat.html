@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="css/style.css">
     <style>
 
+        html, body {
+            height: 100%;
+        }
+
         body {
             background: #eef2f5;
             min-height: 100vh;
@@ -58,15 +62,20 @@
             100% { transform: translate(30px, 40px) scale(1.08); }
         }
 
+        /* --- CONTAINER: limitato all'altezza della viewport --- */
         .chat-wrapper-container {
             max-width: 850px;
             width: 90%;
-            margin: 40px auto;
-            flex: 1;
+            margin: 24px auto;
+            flex: 1 1 auto;
             display: flex;
             flex-direction: column;
+            min-height: 0;                       /* FIX flex overflow */
+            /* Lascia spazio per navbar (~80px) + margini */
+            max-height: calc(100vh - 130px);
         }
 
+        /* --- CARD: riempie il container, non lo supera --- */
         .chat-card {
             background: #ffffff;
             border-radius: 20px;
@@ -75,6 +84,8 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            flex: 1 1 auto;
+            min-height: 0;                       /* FIX flex overflow */
             backdrop-filter: blur(10px);
         }
 
@@ -85,6 +96,7 @@
             display: flex;
             align-items: center;
             gap: 16px;
+            flex-shrink: 0;                      /* non si comprime */
         }
 
         .iris-avatar {
@@ -92,8 +104,8 @@
             height: 72px;
             border-radius: 50%;
             overflow: hidden;
-            border: none; /* Rimosso il contorno */
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Ombra morbida neutra */
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             flex-shrink: 0;
             background: #ffffff;
         }
@@ -105,16 +117,42 @@
             display: block;
         }
 
+        /* --- MESSAGGI: unica area scrollabile --- */
         .chat-messages {
-            height: 450px;
+            flex: 1 1 auto;
+            min-height: 0;                       /* FIX critico */
             overflow-y: auto;
+            overflow-x: hidden;
             padding: 24px;
             display: flex;
             flex-direction: column;
             gap: 16px;
             background: #ffffff;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
         }
 
+        /* Impedisce che le bolle si comprimano nel flex column */
+        .chat-messages > * {
+            flex-shrink: 0;
+        }
+
+        /* Scrollbar discreta */
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+        .chat-messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 99px;
+        }
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* --- INPUT: sempre visibile in fondo --- */
         .chat-input {
             padding: 16px 20px;
             border-top: 1px solid #f1f5f9;
@@ -122,10 +160,12 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            flex-shrink: 0;                      /* non si comprime */
         }
 
         .chat-input input[type="text"] {
             flex: 1;
+            min-width: 0;
             padding: 10px 16px;
             border-radius: 99px;
             border: 1px solid #cbd5e1;
@@ -151,6 +191,7 @@
             font-size: 0.88rem;
             font-weight: 600;
             transition: all 0.2s ease;
+            flex-shrink: 0;
         }
 
         .mic-btn:hover {
@@ -161,17 +202,19 @@
         @media (max-width: 600px) {
             .chat-wrapper-container {
                 width: 95%;
-                margin: 16px auto;
+                margin: 12px auto;
+                max-height: calc(100vh - 100px);
             }
             .iris-avatar {
                 width: 58px;
                 height: 58px;
             }
-            .chat-messages {
-                height: 380px;
+            .chat-header {
+                padding: 14px 16px;
             }
             .chat-input {
                 flex-wrap: wrap;
+                padding: 12px;
             }
             .mic-btn span {
                 display: none;
@@ -254,6 +297,23 @@
     document.addEventListener('DOMContentLoaded', () => {
         if (typeof renderNavbar === 'function') {
             renderNavbar('chat');
+        }
+
+        // Auto-scroll: ogni volta che viene aggiunto un messaggio, scrolla in fondo
+        const messagesEl = document.getElementById('messages');
+        if (messagesEl) {
+            const scrollToBottom = () => {
+                messagesEl.scrollTop = messagesEl.scrollHeight;
+            };
+
+            const observer = new MutationObserver(scrollToBottom);
+            observer.observe(messagesEl, {
+                childList: true,
+                subtree: true,
+                characterData: true
+            });
+
+            scrollToBottom();
         }
     });
 </script>

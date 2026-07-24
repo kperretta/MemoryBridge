@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Memory Bridge - Registrati</title>
 
-    <!-- Font moderni da Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -49,7 +48,6 @@
             padding: 30px 20px;
         }
 
-        /* SFONDO ANIMATO DECORATIVO */
         .bg-shapes {
             position: fixed;
             width: 100%;
@@ -90,7 +88,6 @@
             100% { transform: translate(30px, 40px) scale(1.08); }
         }
 
-        /* CONTENITORE PRINCIPALE */
         .auth-page {
             position: relative;
             z-index: 1;
@@ -114,7 +111,6 @@
             transition: all 0.3s ease;
         }
 
-        /* COLONNA SINISTRA (BRANDING) */
         .brand-section {
             background: linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(239, 244, 249, 0.8) 100%);
             padding: 48px 32px;
@@ -158,7 +154,6 @@
             font-weight: 500;
         }
 
-        /* COLONNA DESTRA (FORM REGISTRAZIONE) */
         .form-section {
             padding: 48px 40px;
             display: flex;
@@ -220,7 +215,6 @@
             background-color: #FFF5F5;
         }
 
-        /* PASSWORD WRAPPER & TOGGLE */
         .password-wrapper {
             position: relative;
             display: flex;
@@ -249,7 +243,6 @@
             background: rgba(78, 133, 191, 0.1);
         }
 
-        /* INDICATORE FORZA PASSWORD */
         .password-strength {
             height: 4px;
             width: 100%;
@@ -278,7 +271,6 @@
             line-height: 1.3;
         }
 
-        /* ERRORI DI CAMPO */
         .field-error {
             color: var(--danger);
             font-size: 0.78rem;
@@ -287,7 +279,6 @@
             min-height: 16px;
         }
 
-        /* SCELTA NUCLEO FAMILIARE (SCHEDE RADIO) */
         .family-choice {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -345,7 +336,6 @@
             font-weight: 500;
         }
 
-        /* MESSAGGI ERRORE GLOBALE */
         .error-message {
             background-color: var(--danger-bg);
             color: var(--danger);
@@ -361,7 +351,6 @@
             display: none !important;
         }
 
-        /* BOTTONE PRINCIPALE */
         .btn {
             width: 100%;
             padding: 14px 24px;
@@ -399,7 +388,6 @@
             transform: none !important;
         }
 
-        /* FOOTER */
         .auth-footer {
             text-align: center;
             margin-top: 24px;
@@ -419,7 +407,124 @@
             text-decoration: underline;
         }
 
-        /* RESPONSIVE DESIGN (MOBILE) */
+        /* --- MODAL SUCCESSO CON CODICE FAMIGLIA --- */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(6px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.25s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .success-modal {
+            background: #ffffff;
+            border-radius: var(--radius-lg);
+            padding: 36px 32px;
+            max-width: 440px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .success-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10B981, #059669);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35);
+        }
+
+        .success-modal h2 {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.5rem;
+            color: var(--primary-dark);
+            margin-bottom: 8px;
+        }
+
+        .success-modal .lead {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .code-box {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border: 2px dashed var(--primary);
+            border-radius: var(--radius-md);
+            padding: 18px 16px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .code-value {
+            font-family: 'Fredoka', monospace;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            letter-spacing: 1.5px;
+            word-break: break-all;
+            text-align: left;
+            flex: 1;
+        }
+
+        .copy-btn {
+            background: var(--primary-dark);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .copy-btn:hover {
+            background: var(--primary);
+            transform: scale(1.03);
+        }
+
+        .copy-btn.copied {
+            background: var(--success);
+        }
+
+        .warning-note {
+            background: #FEF3C7;
+            border-left: 4px solid var(--warning);
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            color: #78350F;
+            text-align: left;
+            line-height: 1.4;
+            margin-bottom: 20px;
+        }
+
         @media (max-width: 840px) {
             .auth-card {
                 grid-template-columns: 1fr;
@@ -457,7 +562,6 @@
 </head>
 <body>
 
-<!-- Elementi decorativi di sfondo -->
 <div class="bg-shapes">
     <div class="shape shape-1"></div>
     <div class="shape shape-2"></div>
@@ -466,7 +570,6 @@
 <div class="auth-page">
     <div class="auth-card">
 
-        <!-- Colonna Sinistra: Brand & Identità -->
         <div class="brand-section">
             <div class="logo-wrapper">
                 <img src="img/site/logo.png" alt="Logo Memory Bridge" class="site-logo">
@@ -475,7 +578,6 @@
             <p class="subtitle">Crea il tuo account ed inizia a custodire i tuoi ricordi più preziosi.</p>
         </div>
 
-        <!-- Colonna Destra: Modulo Registrazione -->
         <div class="form-section">
             <h1 class="form-title">Crea un Account</h1>
 
@@ -546,8 +648,8 @@
                     </div>
 
                     <div class="family-detail" id="detail-new">
-                        <p>Scegli un nome per il nuovo nucleo familiare:</p>
-                        <input type="text" id="newFamilyName" minlength="2" maxlength="40" placeholder="ES. Famiglia Rossi">
+                        <p>Scegli un nome per il nuovo nucleo familiare. Alla registrazione verrà generato un <strong>codice famiglia univoco</strong> da condividere con i tuoi cari:</p>
+                        <input type="text" id="newFamilyName" minlength="2" maxlength="40" style="text-transform: uppercase" placeholder="ES. FAMIGLIA ROSSI">
                         <div class="field-error" data-for="newFamilyName"></div>
                     </div>
                 </div>
@@ -565,11 +667,34 @@
     </div>
 </div>
 
-<!-- Script JavaScript con logica di validazione originale -->
+<!-- MODAL DI SUCCESSO CON IL CODICE FAMIGLIA -->
+<div id="success-modal-backdrop" class="modal-backdrop hidden">
+    <div class="success-modal">
+        <div class="success-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+        </div>
+        <h2>Nucleo famiglia creato!</h2>
+        <p class="lead">Questo è il codice del tuo nuovo nucleo famiglia. Condividilo con i tuoi cari per farli entrare.</p>
+
+        <div class="code-box">
+            <div class="code-value" id="generated-code">—</div>
+            <button type="button" class="copy-btn" id="copy-btn">Copia</button>
+        </div>
+
+        <div class="warning-note">
+            <strong>Importante:</strong> salva questo codice in un posto sicuro. Ti servirà per invitare altri familiari.
+        </div>
+
+        <button type="button" class="btn btn-primary" id="continue-btn">Entra in Memory Bridge</button>
+    </div>
+</div>
+
 <script src="js/api.js"></script>
 <script>
     // ---------- Utility di validazione ----------
-    const NAME_REGEX   = /^[\p{L}][\p{L} '\-]*[\p{L}]$/u;   // lettere unicode, spazi, ' e -
+    const NAME_REGEX   = /^[\p{L}][\p{L} '\-]*[\p{L}]$/u;
     const EMAIL_REGEX  = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
     const CODE_REGEX   = /^[A-Z0-9]{4,20}$/;
     const INVITE_REGEX = /^[A-Z0-9]{4,16}$/;
@@ -663,7 +788,7 @@
         }
     });
 
-    // ---------- Validazione al blur (feedback immediato) ----------
+    // ---------- Validazione al blur ----------
     document.getElementById('firstName').addEventListener('blur', () => validateName('firstName', 'Nome'));
     document.getElementById('lastName').addEventListener('blur', () => validateName('lastName', 'Cognome'));
     document.getElementById('email').addEventListener('blur', validateEmail);
@@ -679,7 +804,6 @@
     function showDetail(choice) {
         choices.forEach(c => {
             document.getElementById(`detail-${c}`).classList.toggle('active', c === choice);
-            // Pulisco eventuali errori dei campi non attivi
             const map = { invite: 'inviteCode', existing: 'familyCode', new: 'newFamilyName' };
             if (c !== choice) setFieldError(map[c], '');
         });
@@ -698,6 +822,36 @@
         showDetail('new');
     }
 
+    // ---------- MODAL SUCCESSO ----------
+    function showSuccessModal(familyCode) {
+        document.getElementById('generated-code').textContent = familyCode;
+        document.getElementById('success-modal-backdrop').classList.remove('hidden');
+    }
+
+    document.getElementById('copy-btn').addEventListener('click', async () => {
+        const code = document.getElementById('generated-code').textContent;
+        const btn = document.getElementById('copy-btn');
+        try {
+            await navigator.clipboard.writeText(code);
+            btn.textContent = 'Copiato ✓';
+            btn.classList.add('copied');
+            setTimeout(() => {
+                btn.textContent = 'Copia';
+                btn.classList.remove('copied');
+            }, 2000);
+        } catch (err) {
+            // Fallback: seleziona il testo
+            const range = document.createRange();
+            range.selectNode(document.getElementById('generated-code'));
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+        }
+    });
+
+    document.getElementById('continue-btn').addEventListener('click', () => {
+        window.location.href = 'home.html';
+    });
+
     // ---------- Submit ----------
     document.getElementById('register-form').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -706,7 +860,6 @@
         const submitBtn = document.getElementById('submit-btn');
         const errEl = document.getElementById('error');
 
-        // Validazioni campo per campo
         const firstName = validateName('firstName', 'Nome');
         const lastName  = validateName('lastName', 'Cognome');
         const email     = validateEmail();
@@ -731,18 +884,18 @@
             if (!familyCode)                { setFieldError('familyCode', 'Inserisci il codice famiglia'); return; }
             if (!CODE_REGEX.test(familyCode)) { setFieldError('familyCode', 'Codice famiglia non valido (4-20 caratteri, solo lettere e numeri)'); return; }
         } else if (choice === 'new') {
-            newFamilyName = document.getElementById('newFamilyName').value.trim();
+            newFamilyName = document.getElementById('newFamilyName').value.trim().toUpperCase();
+            document.getElementById('newFamilyName').value = newFamilyName;
             if (!newFamilyName)          { setFieldError('newFamilyName', 'Dai un nome al tuo nuovo nucleo familiare'); return; }
             if (newFamilyName.length < 2) { setFieldError('newFamilyName', 'Nome troppo corto (min 2 caratteri)'); return; }
             if (newFamilyName.length > 40){ setFieldError('newFamilyName', 'Nome troppo lungo (max 40 caratteri)'); return; }
         }
 
-        // Blocco se una qualunque validazione principale è fallita
         if (!firstName || !lastName || !email || !password || !pwdConf) return;
 
         const body = {
             firstName, lastName, email, password,
-            choice,           // 'invite' | 'existing' | 'new'
+            choice,
             inviteCode, familyCode, newFamilyName
         };
 
@@ -751,7 +904,13 @@
 
         try {
             const result = await api.post('/api/register', body);
-            window.location.href = result.isNewFamily ? 'home.html' : 'link-member.html';
+
+            // Se ho creato un nuovo nucleo, mostro il modal con il codice generato
+            if (result.isNewFamily && result.user && result.user.familyCode) {
+                showSuccessModal(result.user.familyCode);
+            } else {
+                window.location.href = 'link-member.html';
+            }
         } catch (err) {
             errEl.textContent = err.message || 'Errore durante la registrazione';
             errEl.classList.remove('hidden');
